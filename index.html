@@ -3,354 +3,167 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CrossRef — ASSA ABLOY Product Comparison</title>
-  <meta name="description" content="Cross-reference door hardware products across brands. Find comparable cylinders, closers and more." />
+  <title>DHXR — Door Hardware Cross Reference</title>
+  <meta name="description" content="Cross-reference door hardware products across brands. Cylinders, closers and more." />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     :root {
-      --bg:        #ffffff;
-      --bg2:       #f7f7f5;
-      --bg3:       #f0efeb;
-      --bginfo:    #e6f1fb;
-      --bgwarn:    #faeeda;
-      --bgsuccess: #eaf3de;
-      --bgdanger:  #fcebeb;
-      --txt:       #1a1a1a;
-      --txt2:      #6b6b6b;
-      --txt3:      #9a9a9a;
-      --txtinfo:   #0c447c;
-      --txtwarn:   #854f0b;
-      --txtsuccess:#3b6d11;
-      --txtdanger: #a32d2d;
-      --bdr:       rgba(0,0,0,0.10);
-      --bdr2:      rgba(0,0,0,0.18);
-      --bdr3:      rgba(0,0,0,0.26);
-      --r-md:      8px;
-      --r-lg:      12px;
-      --font:      -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
-      --mono:      "SF Mono", "Fira Code", "Fira Mono", monospace;
+      --bg:#ffffff; --bg2:#f7f7f5; --bg3:#f0efeb;
+      --bginfo:#e6f1fb; --bgwarn:#faeeda; --bgsuccess:#eaf3de; --bgdanger:#fcebeb;
+      --bgprop:#f3e5f5;
+      --txt:#1a1a1a; --txt2:#6b6b6b; --txt3:#9a9a9a;
+      --txtinfo:#0c447c; --txtwarn:#854f0b; --txtsuccess:#3b6d11; --txtdanger:#a32d2d;
+      --txtprop:#4a235a;
+      --bdr:rgba(0,0,0,0.10); --bdr2:rgba(0,0,0,0.18); --bdr3:rgba(0,0,0,0.28);
+      --r-md:8px; --r-lg:12px;
+      --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+      --mono:"SF Mono","Fira Code",monospace;
     }
-
-    @media (prefers-color-scheme: dark) {
-      :root {
-        --bg:        #1c1c1e;
-        --bg2:       #2c2c2e;
-        --bg3:       #3a3a3c;
-        --bginfo:    #0c2a44;
-        --bgwarn:    #3d2600;
-        --bgsuccess: #1a3008;
-        --bgdanger:  #3d0f0f;
-        --txt:       #f0f0f0;
-        --txt2:      #a0a0a0;
-        --txt3:      #6a6a6a;
-        --txtinfo:   #85b7eb;
-        --txtwarn:   #fac775;
-        --txtsuccess:#c0dd97;
-        --txtdanger: #f09595;
-        --bdr:       rgba(255,255,255,0.10);
-        --bdr2:      rgba(255,255,255,0.18);
-        --bdr3:      rgba(255,255,255,0.26);
+    @media(prefers-color-scheme:dark){
+      :root{
+        --bg:#1c1c1e; --bg2:#2c2c2e; --bg3:#3a3a3c;
+        --bginfo:#0c2a44; --bgwarn:#3d2600; --bgsuccess:#1a3008; --bgdanger:#3d0f0f;
+        --bgprop:#2a1040;
+        --txt:#f0f0f0; --txt2:#a0a0a0; --txt3:#6a6a6a;
+        --txtinfo:#85b7eb; --txtwarn:#fac775; --txtsuccess:#c0dd97; --txtdanger:#f09595;
+        --txtprop:#ce93d8;
+        --bdr:rgba(255,255,255,0.10); --bdr2:rgba(255,255,255,0.18); --bdr3:rgba(255,255,255,0.28);
       }
     }
+    body { font-family:var(--font); background:var(--bg3); color:var(--txt); min-height:100vh; font-size:15px; line-height:1.6; }
 
-    body {
-      font-family: var(--font);
-      background: var(--bg3);
-      color: var(--txt);
-      min-height: 100vh;
-      font-size: 15px;
-      line-height: 1.6;
-    }
+    header { background:var(--bg); border-bottom:0.5px solid var(--bdr2); padding:0 2rem; height:56px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:100; }
+    .h-brand { display:flex; align-items:baseline; gap:10px; }
+    .h-name { font-size:18px; font-weight:500; color:var(--txt); letter-spacing:-.01em; }
+    .h-full { font-size:12px; color:var(--txt2); }
+    .h-tag { font-size:11px; background:var(--bgwarn); color:var(--txtwarn); padding:3px 10px; border-radius:99px; font-weight:500; }
 
-    header {
-      background: var(--bg);
-      border-bottom: 0.5px solid var(--bdr2);
-      padding: 0 2rem;
-      height: 52px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
+    main { max-width:880px; margin:0 auto; padding:2rem 1.5rem 4rem; }
+    .page-intro { margin-bottom:2rem; }
+    .page-intro h1 { font-size:20px; font-weight:500; margin-bottom:5px; }
+    .page-intro p { font-size:14px; color:var(--txt2); }
 
-    .header-logo {
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--txt2);
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-    }
-    .header-logo span { color: var(--txt); }
+    .step-bar { display:flex; align-items:center; gap:8px; margin-bottom:1.75rem; }
+    .step { display:flex; align-items:center; gap:6px; font-size:12px; color:var(--txt3); }
+    .step.active { color:var(--txt); font-weight:500; }
+    .step.done   { color:var(--txt2); }
+    .step-num { width:20px; height:20px; border-radius:50%; border:0.5px solid var(--bdr2); display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:500; flex-shrink:0; }
+    .step.active .step-num { background:var(--txt); color:var(--bg); border-color:var(--txt); }
+    .step.done   .step-num { background:var(--bg2); }
+    .step-div { flex:1; height:0.5px; background:var(--bdr); }
 
-    .header-tag {
-      font-size: 11px;
-      background: var(--bgwarn);
-      color: var(--txtwarn);
-      padding: 3px 10px;
-      border-radius: 99px;
-      font-weight: 500;
-    }
+    .cat-row { display:flex; gap:8px; margin-bottom:1rem; }
+    .cat-btn { flex:1; padding:10px; border-radius:var(--r-md); border:0.5px solid var(--bdr2); background:var(--bg); cursor:pointer; text-align:left; transition:background .15s; }
+    .cat-btn:hover { background:var(--bg2); }
+    .cat-btn.active { border:2px solid var(--txtinfo); background:var(--bginfo); }
+    .cat-btn.active .cat-name { color:var(--txtinfo); }
+    .cat-name { font-size:13px; font-weight:500; color:var(--txt); margin-bottom:2px; }
+    .cat-sub  { font-size:11px; color:var(--txt2); }
 
-    main {
-      max-width: 860px;
-      margin: 0 auto;
-      padding: 2rem 1.5rem 4rem;
-    }
+    .search-row { display:flex; gap:8px; margin-bottom:.5rem; }
+    .search-row input { flex:1; font-size:14px; padding:0 12px; height:38px; border:0.5px solid var(--bdr2); border-radius:var(--r-md); background:var(--bg); color:var(--txt); font-family:var(--font); outline:none; }
+    .search-row input:focus { border-color:var(--bdr3); box-shadow:0 0 0 3px rgba(0,0,0,.06); }
+    .search-row input::placeholder { color:var(--txt3); }
+    .search-row button { padding:0 20px; height:38px; font-size:13px; font-weight:500; border:0.5px solid var(--bdr2); border-radius:var(--r-md); background:var(--bg); color:var(--txt); cursor:pointer; font-family:var(--font); white-space:nowrap; transition:background .15s; }
+    .search-row button:hover { background:var(--bg2); }
 
-    .page-intro {
-      margin-bottom: 2rem;
-    }
-    .page-intro h1 {
-      font-size: 22px;
-      font-weight: 500;
-      margin-bottom: 6px;
-    }
-    .page-intro p {
-      font-size: 14px;
-      color: var(--txt2);
-    }
+    .hint { font-size:12px; color:var(--txt3); margin-bottom:1.5rem; }
+    .hint code { font-family:var(--mono); background:var(--bg2); padding:1px 5px; border-radius:4px; font-size:11px; color:var(--txt2); }
 
-    .step-bar {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 1.75rem;
-    }
-    .step {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 12px;
-      color: var(--txt3);
-    }
-    .step.active { color: var(--txt); font-weight: 500; }
-    .step.done   { color: var(--txt2); }
-    .step-num {
-      width: 20px; height: 20px;
-      border-radius: 50%;
-      border: 0.5px solid var(--bdr2);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 11px; font-weight: 500; flex-shrink: 0;
-    }
-    .step.active .step-num { background: var(--txt); color: var(--bg); border-color: var(--txt); }
-    .step.done .step-num   { background: var(--bg2); }
-    .step-div { flex: 1; height: 0.5px; background: var(--bdr); }
+    .slabel { font-size:11px; font-weight:500; color:var(--txt2); text-transform:uppercase; letter-spacing:.06em; margin-bottom:.75rem; }
 
-    .cat-row { display: flex; gap: 8px; margin-bottom: 1rem; }
-    .cat-btn {
-      flex: 1; padding: 10px;
-      border-radius: var(--r-md);
-      border: 0.5px solid var(--bdr2);
-      background: var(--bg);
-      cursor: pointer; text-align: left;
-      transition: border-color .15s, background .15s;
-    }
-    .cat-btn:hover { background: var(--bg2); }
-    .cat-btn.active { border: 2px solid var(--txtinfo); background: var(--bginfo); }
-    .cat-btn.active .cat-name { color: var(--txtinfo); }
-    .cat-name { font-size: 13px; font-weight: 500; color: var(--txt); margin-bottom: 2px; }
-    .cat-sub  { font-size: 11px; color: var(--txt2); }
+    .result-row { display:flex; align-items:center; gap:12px; padding:10px 14px; border-radius:var(--r-md); border:0.5px solid var(--bdr); background:var(--bg); margin-bottom:6px; cursor:pointer; transition:border-color .15s, background .15s; }
+    .result-row:hover { border-color:var(--bdr3); background:var(--bg2); }
+    .rr-name { font-size:13px; font-weight:500; color:var(--txt); }
+    .rr-sku  { font-size:11px; font-family:var(--mono); color:var(--txt2); margin-top:1px; }
 
-    .search-row { display: flex; gap: 8px; margin-bottom: .5rem; }
-    .search-row input {
-      flex: 1;
-      font-size: 14px;
-      padding: 0 12px;
-      height: 38px;
-      border: 0.5px solid var(--bdr2);
-      border-radius: var(--r-md);
-      background: var(--bg);
-      color: var(--txt);
-      font-family: var(--font);
-      outline: none;
-    }
-    .search-row input:focus { border-color: var(--bdr3); box-shadow: 0 0 0 3px rgba(0,0,0,0.06); }
-    .search-row input::placeholder { color: var(--txt3); }
+    .comp-card { background:var(--bg); border:0.5px solid var(--bdr); border-radius:var(--r-lg); padding:1.25rem; margin-bottom:.75rem; }
 
-    .search-row button {
-      padding: 0 20px;
-      height: 38px;
-      font-size: 13px;
-      font-weight: 500;
-      border: 0.5px solid var(--bdr2);
-      border-radius: var(--r-md);
-      background: var(--bg);
-      color: var(--txt);
-      cursor: pointer;
-      font-family: var(--font);
-      white-space: nowrap;
-      transition: background .15s;
-    }
-    .search-row button:hover { background: var(--bg2); }
-    .search-row button:active { transform: scale(0.98); }
+    .badge { font-size:11px; font-weight:500; padding:3px 10px; border-radius:99px; white-space:nowrap; flex-shrink:0; }
+    .b-aa   { background:var(--bginfo);    color:var(--txtinfo); }
+    .b-al   { background:var(--bgwarn);    color:var(--txtwarn); }
+    .b-dk   { background:#ede7f6;          color:#4527a0; }
+    .b-high { background:var(--bgsuccess); color:var(--txtsuccess); }
+    .b-partial { background:var(--bgwarn); color:var(--txtwarn); }
+    .b-incompat { background:var(--bgdanger); color:var(--txtdanger); }
+    .b-prop { background:var(--bgprop); color:var(--txtprop); font-size:10px; }
 
-    .hint { font-size: 12px; color: var(--txt3); margin-bottom: 1.5rem; }
-    .hint code {
-      font-family: var(--mono);
-      background: var(--bg2);
-      padding: 1px 5px;
-      border-radius: 4px;
-      font-size: 11px;
-      color: var(--txt2);
-    }
+    .cat-tag { font-size:10px; font-weight:500; padding:2px 7px; border-radius:4px; text-transform:uppercase; letter-spacing:.04em; }
+    .cat-cyl { background:#e1f5ee; color:#085041; }
+    .cat-cls { background:#faeeda; color:#633806; }
 
-    .slabel {
-      font-size: 11px; font-weight: 500;
-      color: var(--txt2);
-      text-transform: uppercase;
-      letter-spacing: .06em;
-      margin-bottom: .75rem;
-    }
+    .score-bar-track { height:6px; background:var(--bg2); border-radius:99px; overflow:hidden; margin-bottom:1rem; }
+    .score-bar-fill  { height:100%; border-radius:99px; }
 
-    .result-row {
-      display: flex; align-items: center; gap: 12px;
-      padding: 10px 14px;
-      border-radius: var(--r-md);
-      border: 0.5px solid var(--bdr);
-      background: var(--bg);
-      margin-bottom: 6px;
-      cursor: pointer;
-      transition: border-color .15s, background .15s;
-    }
-    .result-row:hover { border-color: var(--bdr3); background: var(--bg2); }
-    .rr-name { font-size: 13px; font-weight: 500; color: var(--txt); }
-    .rr-sku  { font-size: 11px; font-family: var(--mono); color: var(--txt2); margin-top: 1px; }
+    .tier-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(110px,1fr)); gap:6px; margin-bottom:1rem; }
+    .tier-card { background:var(--bg2); border-radius:var(--r-md); padding:8px 10px; }
+    .tier-label { font-size:10px; font-weight:500; text-transform:uppercase; letter-spacing:.05em; color:var(--txt2); margin-bottom:4px; }
+    .tier-score { font-size:18px; font-weight:500; }
+    .tier-score.good { color:var(--txtsuccess); }
+    .tier-score.mid  { color:var(--txtwarn); }
+    .tier-score.low  { color:var(--txtdanger); }
+    .tier-sub { font-size:11px; color:var(--txt2); margin-top:1px; }
 
-    .comp-card {
-      background: var(--bg);
-      border: 0.5px solid var(--bdr);
-      border-radius: var(--r-lg);
-      padding: 1.25rem;
-      margin-bottom: .75rem;
-    }
+    .caution-box { background:var(--bgwarn); border-radius:var(--r-md); padding:8px 12px; font-size:12px; color:var(--txtwarn); margin-bottom:.75rem; }
+    .caution-box strong { font-weight:500; }
 
-    .badge {
-      font-size: 11px; font-weight: 500;
-      padding: 3px 10px;
-      border-radius: 99px;
-      white-space: nowrap; flex-shrink: 0;
-    }
-    .b-aa  { background: var(--bginfo);    color: var(--txtinfo); }
-    .b-al  { background: var(--bgwarn);    color: var(--txtwarn); }
-    .b-dk  { background: #ede7f6;          color: #4527a0; }
-    .b-high   { background: var(--bgsuccess); color: var(--txtsuccess); }
-    .b-partial{ background: var(--bgwarn);    color: var(--txtwarn); }
-    .b-incompat{background: var(--bgdanger);  color: var(--txtdanger); }
-    .cat-tag { font-size: 10px; font-weight: 500; padding: 2px 7px; border-radius: 4px; text-transform: uppercase; letter-spacing: .04em; }
-    .cat-cyl { background: #e1f5ee; color: #085041; }
-    .cat-cls { background: #faeeda; color: #633806; }
+    .prop-row { display:flex; align-items:flex-start; gap:8px; background:var(--bgprop); border-radius:var(--r-md); padding:8px 12px; margin-bottom:.75rem; }
+    .prop-row-txt { font-size:12px; color:var(--txtprop); }
+    .prop-row-txt strong { font-weight:500; }
 
-    .score-bar-track {
-      height: 6px; background: var(--bg2);
-      border-radius: 99px; overflow: hidden; margin-bottom: 6px;
-    }
-    .score-bar-fill { height: 100%; border-radius: 99px; }
+    .diff-table { width:100%; border-collapse:collapse; font-size:12px; table-layout:fixed; }
+    .diff-table th { font-size:10px; font-weight:500; color:var(--txt2); text-transform:uppercase; letter-spacing:.05em; padding:4px 8px 6px; text-align:left; border-bottom:0.5px solid var(--bdr); }
+    .diff-table th.r { text-align:right; }
+    .diff-table td { padding:5px 8px; border-bottom:0.5px solid var(--bdr); vertical-align:middle; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .diff-table tr:last-child td { border-bottom:none; }
+    .diff-table td.fld { width:130px; color:var(--txt2); }
+    .diff-table td.wt  { width:56px; text-align:center; }
+    .diff-table td.tv  { font-weight:500; color:var(--txt); }
+    .diff-table td.sv  { text-align:right; }
+    .vsame { color:var(--txt2); }
+    .vdiff { color:var(--txtwarn); font-weight:500; }
+    .vbad  { color:var(--txtdanger); font-weight:500; }
 
-    .tier-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-      gap: 6px; margin-bottom: 1rem;
-    }
-    .tier-card { background: var(--bg2); border-radius: var(--r-md); padding: 8px 10px; }
-    .tier-label { font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: .05em; color: var(--txt2); margin-bottom: 4px; }
-    .tier-score { font-size: 18px; font-weight: 500; }
-    .tier-score.good { color: var(--txtsuccess); }
-    .tier-score.mid  { color: var(--txtwarn); }
-    .tier-score.low  { color: var(--txtdanger); }
-    .tier-sub { font-size: 11px; color: var(--txt2); margin-top: 1px; }
+    .wt-pip { display:inline-flex; gap:2px; }
+    .pip { width:6px; height:6px; border-radius:50%; background:var(--bdr2); }
+    .pip.on { background:var(--txt); }
 
-    .caution-box {
-      background: var(--bgwarn);
-      border-radius: var(--r-md);
-      padding: 8px 12px;
-      font-size: 12px;
-      color: var(--txtwarn);
-      margin-bottom: .75rem;
-    }
-    .caution-box strong { font-weight: 500; }
+    .variants-section { margin-top:.75rem; border-top:0.5px solid var(--bdr); padding-top:.75rem; }
+    .variants-toggle { font-size:12px; color:var(--txt2); background:none; border:none; cursor:pointer; padding:0; font-family:var(--font); display:flex; align-items:center; gap:4px; }
+    .variants-toggle:hover { color:var(--txt); }
+    .variants-body { margin-top:.6rem; display:none; }
+    .variants-body.open { display:block; }
+    .variant-chip { display:inline-flex; align-items:center; gap:5px; font-size:11px; background:var(--bg2); border:0.5px solid var(--bdr); border-radius:4px; padding:3px 8px; margin:3px 3px 3px 0; color:var(--txt2); }
+    .variant-chip.excl { background:var(--bgprop); border-color:var(--txtprop); color:var(--txtprop); font-weight:500; }
 
-    .diff-table { width: 100%; border-collapse: collapse; font-size: 12px; table-layout: fixed; }
-    .diff-table th {
-      font-size: 10px; font-weight: 500; color: var(--txt2);
-      text-transform: uppercase; letter-spacing: .05em;
-      padding: 4px 8px 6px; text-align: left;
-      border-bottom: 0.5px solid var(--bdr);
-    }
-    .diff-table th.r { text-align: right; }
-    .diff-table td {
-      padding: 5px 8px;
-      border-bottom: 0.5px solid var(--bdr);
-      vertical-align: middle;
-      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-    }
-    .diff-table tr:last-child td { border-bottom: none; }
-    .diff-table td.fld { width: 130px; color: var(--txt2); }
-    .diff-table td.wt  { width: 60px; text-align: center; }
-    .diff-table td.tv  { font-weight: 500; color: var(--txt); }
-    .diff-table td.sv  { text-align: right; }
-    .vsame { color: var(--txt2); }
-    .vdiff { color: var(--txtwarn); font-weight: 500; }
-    .vbad  { color: var(--txtdanger); font-weight: 500; }
+    .iw { position:relative; display:inline-flex; align-items:center; gap:4px; }
+    .iico { width:14px; height:14px; border-radius:50%; border:0.5px solid var(--bdr2); display:inline-flex; align-items:center; justify-content:center; font-size:10px; color:var(--txt2); cursor:default; }
+    .tip { display:none; position:absolute; top:calc(100% + 6px); right:0; background:var(--bg); border:0.5px solid var(--bdr2); border-radius:var(--r-md); padding:8px 10px; min-width:200px; z-index:50; font-size:12px; box-shadow:0 4px 16px rgba(0,0,0,.12); }
+    .tip .tn { font-weight:500; margin-bottom:2px; color:var(--txt); }
+    .tip .ts { font-family:var(--mono); font-size:11px; color:var(--txt2); }
+    .iw:hover .tip { display:block; }
 
-    .wt-pip { display: inline-flex; gap: 2px; }
-    .pip { width: 6px; height: 6px; border-radius: 50%; background: var(--bdr2); }
-    .pip.on { background: var(--txt); }
+    .change-btn { font-size:12px; color:var(--txt2); background:none; border:none; cursor:pointer; padding:0; text-decoration:underline; text-underline-offset:2px; font-family:var(--font); }
+    .change-btn:hover { color:var(--txt); }
+    .empty { text-align:center; padding:3rem 1rem; color:var(--txt2); font-size:14px; }
 
-    .iw { position: relative; display: inline-flex; align-items: center; gap: 4px; }
-    .iico {
-      width: 14px; height: 14px; border-radius: 50%;
-      border: 0.5px solid var(--bdr2);
-      display: inline-flex; align-items: center; justify-content: center;
-      font-size: 10px; color: var(--txt2); cursor: default;
-    }
-    .tip {
-      display: none;
-      position: absolute; top: calc(100% + 6px); right: 0;
-      background: var(--bg);
-      border: 0.5px solid var(--bdr2);
-      border-radius: var(--r-md);
-      padding: 8px 10px; min-width: 200px; z-index: 50;
-      font-size: 12px;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.12);
-    }
-    .tip .tn { font-weight: 500; margin-bottom: 2px; color: var(--txt); }
-    .tip .ts { font-family: var(--mono); font-size: 11px; color: var(--txt2); }
-    .iw:hover .tip { display: block; }
-
-    .change-btn {
-      font-size: 12px; color: var(--txt2);
-      background: none; border: none; cursor: pointer; padding: 0;
-      text-decoration: underline; text-underline-offset: 2px;
-      font-family: var(--font);
-    }
-    .change-btn:hover { color: var(--txt); }
-
-    .empty { text-align: center; padding: 3rem 1rem; color: var(--txt2); font-size: 14px; }
-
-    footer {
-      text-align: center;
-      font-size: 12px;
-      color: var(--txt3);
-      padding: 2rem;
-      border-top: 0.5px solid var(--bdr);
-      margin-top: 2rem;
-    }
+    footer { text-align:center; font-size:12px; color:var(--txt3); padding:2rem; border-top:0.5px solid var(--bdr); margin-top:2rem; }
   </style>
 </head>
 <body>
 
 <header>
-  <div class="header-logo">ASSA ABLOY &nbsp;/&nbsp; <span>CrossRef</span></div>
-  <span class="header-tag">Prototype</span>
+  <div class="h-brand">
+    <span class="h-name">DHXR</span>
+    <span class="h-full">Door Hardware Cross Reference</span>
+  </div>
+  <span class="h-tag">Prototype · v0.2</span>
 </header>
 
 <main>
   <div class="page-intro">
     <h1>Product cross-reference</h1>
-    <p>Search by part number, model name, brand, or specification to find comparable products across brands.</p>
+    <p>Search by part number, model, brand, or specification to find and compare equivalent products across brands.</p>
   </div>
 
   <div class="step-bar">
@@ -362,16 +175,13 @@
   <div id="step1">
     <div class="cat-row">
       <button class="cat-btn active" id="cat-all" onclick="setCat('all')">
-        <div class="cat-name">All products</div>
-        <div class="cat-sub">Cylinders &amp; closers</div>
+        <div class="cat-name">All products</div><div class="cat-sub">Cylinders &amp; closers</div>
       </button>
       <button class="cat-btn" id="cat-cyl" onclick="setCat('cylinder')">
-        <div class="cat-name">Cylinders &amp; cores</div>
-        <div class="cat-sub">Mortise, IC, SFIC</div>
+        <div class="cat-name">Cylinders &amp; cores</div><div class="cat-sub">Mortise, IC, SFIC</div>
       </button>
       <button class="cat-btn" id="cat-cls" onclick="setCat('closer')">
-        <div class="cat-name">Door closers</div>
-        <div class="cat-sub">Surface mounted</div>
+        <div class="cat-name">Door closers</div><div class="cat-sub">Surface mounted</div>
       </button>
     </div>
     <div class="search-row">
@@ -390,50 +200,136 @@
   </div>
 </main>
 
-<footer>CrossRef prototype &nbsp;·&nbsp; ASSA ABLOY internal use only &nbsp;·&nbsp; Data pending SME validation</footer>
+<footer>DHXR · Door Hardware Cross Reference &nbsp;·&nbsp; Prototype v0.2 &nbsp;·&nbsp; Data pending SME validation</footer>
 
 <script>
-const CLOSER_WEIGHTS={
-  "ANSI size":35,"Mounting":25,"Arm type":20,"Fire rated":15,
-  "Max door (lbs)":12,"Max width (in)":12,"Delayed":8,"Backcheck":8,
-  "Template":6,
-  "Finish":4,"Hold open":3,"Size range":3
-};
-const CYL_WEIGHTS={
-  "Type":30,"Grade":25,"Key control":20,"IC format":20,
-  "Pins":10,"Keyway":8,
-  "Finish":4,"Keying":3
-};
+const CW={Type:30,Grade:25,"Key control":20,"IC format":20,Pins:10,Keyway:8,Finish:4,Keying:3};
+const LW={"ANSI size":35,Mounting:25,"Arm type":20,"Fire rated":15,"Max door (lbs)":12,"Max width (in)":12,Delayed:8,Backcheck:8,Template:6,Finish:4,"Hold open":3,"Size range":3};
 
-const CYL=[
-  {id:"c0",cat:"cylinder",brand:"ASSA ABLOY (Corbin Russwin)",bs:"Corbin Russwin",line:"ML2000 Series",sku:"1000-118-A01 x L4 x 626",name:"Standard Mortise Cylinder – L4, Satin Chrome",fields:{Type:"Mortise","Key control":"Standard",Grade:"ANSI Grade 1",Pins:"6",Finish:"626 – Satin Chrome",Keying:"KD, MK, GMK","IC format":"N/A",Keyway:"Corbin L4"},xref:["c6","c7","c8"],caution:null},
-  {id:"c1",cat:"cylinder",brand:"ASSA ABLOY (Corbin Russwin)",bs:"Corbin Russwin",line:"ML2000 Series",sku:"1000-118-A01 x L4 x 605",name:"Standard Mortise Cylinder – L4, Bright Brass",fields:{Type:"Mortise","Key control":"Standard",Grade:"ANSI Grade 1",Pins:"6",Finish:"605 – Bright Brass",Keying:"KD, MK, GMK","IC format":"N/A",Keyway:"Corbin L4"},xref:["c6","c7"],caution:null},
-  {id:"c2",cat:"cylinder",brand:"ASSA ABLOY (Corbin Russwin)",bs:"Corbin Russwin",line:"ML2000 Series",sku:"1000-118-A01 x L4 x 629",name:"Standard Mortise Cylinder – L4, Bright Stainless",fields:{Type:"Mortise","Key control":"Standard",Grade:"ANSI Grade 1",Pins:"6",Finish:"629 – Bright Stainless",Keying:"KD, MK, GMK","IC format":"N/A",Keyway:"Corbin L4"},xref:["c6","c8"],caution:null},
-  {id:"c3",cat:"cylinder",brand:"ASSA ABLOY (Corbin Russwin)",bs:"Corbin Russwin",line:"ML2000HS",sku:"Pyramid Cylinder x L4 x 626",name:"Pyramid High Security Cylinder – Satin Chrome",fields:{Type:"Mortise","Key control":"High Security",Grade:"ANSI Grade 1",Pins:"6",Finish:"626 – Satin Chrome",Keying:"KD, MK, GMK","IC format":"N/A",Keyway:"Corbin L4 (Pyramid)"},xref:["c9"],caution:null},
-  {id:"c4",cat:"cylinder",brand:"ASSA ABLOY (Corbin Russwin)",bs:"Corbin Russwin",line:"ML2000 Series",sku:"Access 3 Cylinder x L4 x 626",name:"Access 3 High Security Cylinder – Satin Chrome",fields:{Type:"Mortise","Key control":"High Security",Grade:"ANSI Grade 1",Pins:"6",Finish:"626 – Satin Chrome",Keying:"KD, MK, GMK, GGMK","IC format":"N/A",Keyway:"Corbin L4 (Access 3)"},xref:["c10"],caution:null},
-  {id:"c5",cat:"cylinder",brand:"ASSA ABLOY (Corbin Russwin)",bs:"Corbin Russwin",line:"ML2000 Series",sku:"SFIC Housing x ML2000 x 626",name:"Small Format IC Housing – Mortise, Satin Chrome",fields:{Type:"Mortise","Key control":"Restricted",Grade:"ANSI Grade 1",Pins:"7",Finish:"626 – Satin Chrome",Keying:"KD, MK, GMK, GGMK","IC format":"Best SFIC",Keyway:"SFIC (Best/ASSA)"},xref:["c11"],caution:"IC core formats are physically incompatible — Best SFIC cores cannot be used in Schlage FSIC housings and vice versa."},
-  {id:"c6",cat:"cylinder",brand:"Schlage (Allegion)",bs:"Schlage",line:"L Series (L9000)",sku:"20-001 C123 626",name:"Conventional Mortise Cylinder – Everest C123, Satin Chrome",fields:{Type:"Mortise","Key control":"Standard",Grade:"ANSI Grade 1",Pins:"6",Finish:"626 – Satin Chrome",Keying:"KD, MK, GMK","IC format":"N/A",Keyway:"Schlage Everest C123"},xref:["c0","c1","c2"],caution:null},
-  {id:"c7",cat:"cylinder",brand:"Schlage (Allegion)",bs:"Schlage",line:"L Series (L9000)",sku:"20-001 C123 605",name:"Conventional Mortise Cylinder – Everest C123, Bright Brass",fields:{Type:"Mortise","Key control":"Standard",Grade:"ANSI Grade 1",Pins:"6",Finish:"605 – Bright Brass",Keying:"KD, MK, GMK","IC format":"N/A",Keyway:"Schlage Everest C123"},xref:["c0","c1"],caution:null},
-  {id:"c8",cat:"cylinder",brand:"Schlage (Allegion)",bs:"Schlage",line:"L Series (L9000)",sku:"20-001 C123 629",name:"Conventional Mortise Cylinder – Everest C123, Bright Stainless",fields:{Type:"Mortise","Key control":"Standard",Grade:"ANSI Grade 1",Pins:"6",Finish:"629 – Bright Stainless",Keying:"KD, MK, GMK","IC format":"N/A",Keyway:"Schlage Everest C123"},xref:["c0","c2"],caution:null},
-  {id:"c9",cat:"cylinder",brand:"Schlage (Allegion)",bs:"Schlage",line:"L Series – Primus",sku:"20-700 EP 626",name:"Primus High Security Cylinder – Everest EP, Satin Chrome",fields:{Type:"Mortise","Key control":"High Security",Grade:"ANSI Grade 1",Pins:"6",Finish:"626 – Satin Chrome",Keying:"KD, MK, GMK","IC format":"N/A",Keyway:"Schlage Primus (EP)"},xref:["c3"],caution:null},
-  {id:"c10",cat:"cylinder",brand:"Schlage (Allegion)",bs:"Schlage",line:"L Series – Primus XP",sku:"20-700 CP 626",name:"Primus XP High Security Cylinder – CP Keyway, Satin Chrome",fields:{Type:"Mortise","Key control":"High Security",Grade:"ANSI Grade 1",Pins:"6",Finish:"626 – Satin Chrome",Keying:"KD, MK, GMK, GGMK","IC format":"N/A",Keyway:"Schlage Primus XP (CP)"},xref:["c4"],caution:null},
-  {id:"c11",cat:"cylinder",brand:"Schlage (Allegion)",bs:"Schlage",line:"L Series – FSIC",sku:"L Series FSIC Housing 626",name:"Full Size IC Housing – Mortise, Satin Chrome",fields:{Type:"Mortise","Key control":"Restricted",Grade:"ANSI Grade 1",Pins:"6",Finish:"626 – Satin Chrome",Keying:"KD, MK, GMK, GGMK","IC format":"Schlage FSIC",Keyway:"Schlage FSIC"},xref:["c5"],caution:"IC core formats are physically incompatible — Schlage FSIC cores cannot be used in Best SFIC housings and vice versa."},
+const PARENTS=[
+  // ── CYLINDERS ──────────────────────────────────────────────────
+  {id:"CYL-CR-001",cat:"cylinder",brand:"ASSA ABLOY (Corbin Russwin)",bs:"Corbin Russwin",line:"ML2000 Series",model:"1000-118-A01",name:"Standard Mortise Cylinder – L4 Keyway",
+   fields:{Type:"Mortise","Key control":"Standard",Grade:"ANSI Grade 1",Pins:"6",Keyway:"Corbin L4","IC format":"N/A",Finish:"605–630 range",Keying:"KD, KA, MK, GMK"},
+   xref:["CYL-SCH-001"],caution:null,
+   proprietary:["Corbin L4 keyway — brand-proprietary, not interchangeable with Schlage keyways"],
+   exclusive:["612 – Satin Bronze","613 – Oil Rubbed Bronze"],
+   variants:[{sku:"x L4 x 626",finish:"626 – Satin Chrome",excl:false},{sku:"x L4 x 605",finish:"605 – Bright Brass",excl:false},{sku:"x L4 x 629",finish:"629 – Bright Stainless",excl:false},{sku:"x L4 x 612",finish:"612 – Satin Bronze",excl:true},{sku:"x L4 x 613",finish:"613 – Oil Rubbed Bronze",excl:true}]},
+
+  {id:"CYL-CR-002",cat:"cylinder",brand:"ASSA ABLOY (Corbin Russwin)",bs:"Corbin Russwin",line:"ML2000HS",model:"Pyramid-ML2000HS",name:"Pyramid High Security Mortise Cylinder",
+   fields:{Type:"Mortise","Key control":"High Security",Grade:"ANSI Grade 1",Pins:"6",Keyway:"Corbin L4 (Pyramid)","IC format":"N/A",Finish:"626, 629, 630",Keying:"KD, MK, GMK"},
+   xref:["CYL-SCH-002"],caution:null,
+   proprietary:["Pyramid sidebar mechanism — patented, brand-exclusive high security system","Corbin L4 (Pyramid) keyway — restricted, not duplicable without authorization"],
+   exclusive:[],
+   variants:[{sku:"Pyramid x L4 x 626",finish:"626 – Satin Chrome",excl:false}]},
+
+  {id:"CYL-CR-003",cat:"cylinder",brand:"ASSA ABLOY (Corbin Russwin)",bs:"Corbin Russwin",line:"ML2000 Series",model:"Access3-ML2000",name:"Access 3 High Security Mortise Cylinder",
+   fields:{Type:"Mortise","Key control":"High Security",Grade:"ANSI Grade 1",Pins:"6",Keyway:"Corbin L4 (Access 3)","IC format":"N/A",Finish:"626, 629",Keying:"KD, MK, GMK, GGMK"},
+   xref:["CYL-SCH-003"],caution:null,
+   proprietary:["Access 3 patented key control system — highest security tier, geographically restricted","Corbin L4 (Access 3) keyway — patented, cannot be duplicated without factory authorization"],
+   exclusive:[],
+   variants:[{sku:"Access 3 x L4 x 626",finish:"626 – Satin Chrome",excl:false}]},
+
+  {id:"CYL-CR-004",cat:"cylinder",brand:"ASSA ABLOY (Corbin Russwin)",bs:"Corbin Russwin",line:"ML2000 Series",model:"SFIC-ML2000",name:"Small Format IC Housing – Mortise",
+   fields:{Type:"Mortise","Key control":"Restricted",Grade:"ANSI Grade 1",Pins:"7",Keyway:"SFIC (Best/ASSA)","IC format":"Best SFIC",Finish:"606, 626",Keying:"KD, MK, GMK, GGMK"},
+   xref:["CYL-SCH-004"],caution:"IC core formats are physically incompatible — Best SFIC cores cannot be used in Schlage FSIC housings.",
+   proprietary:["Best SFIC format — ASSA ABLOY/Best IC standard, not compatible with Schlage FSIC"],
+   exclusive:[],
+   variants:[{sku:"SFIC x ML2000 x 626",finish:"626 – Satin Chrome",excl:false}]},
+
+  {id:"CYL-SCH-001",cat:"cylinder",brand:"Schlage (Allegion)",bs:"Schlage",line:"L Series (L9000)",model:"20-001",name:"Conventional Mortise Cylinder – Everest C123",
+   fields:{Type:"Mortise","Key control":"Standard",Grade:"ANSI Grade 1",Pins:"6",Keyway:"Schlage Everest C123","IC format":"N/A",Finish:"605–643E range",Keying:"KD, KA, MK, GMK"},
+   xref:["CYL-CR-001"],caution:null,
+   proprietary:["Schlage Everest C123 keyway — patented, two keys included, unauthorized duplication prohibited"],
+   exclusive:["643E – Aged Bronze"],
+   variants:[{sku:"20-001 C123 626",finish:"626 – Satin Chrome",excl:false},{sku:"20-001 C123 605",finish:"605 – Bright Brass",excl:false},{sku:"20-001 C123 629",finish:"629 – Bright Stainless",excl:false},{sku:"20-001 C123 643E",finish:"643E – Aged Bronze",excl:true}]},
+
+  {id:"CYL-SCH-002",cat:"cylinder",brand:"Schlage (Allegion)",bs:"Schlage",line:"L Series – Primus",model:"20-700-EP",name:"Primus High Security Mortise Cylinder – EP Keyway",
+   fields:{Type:"Mortise","Key control":"High Security",Grade:"ANSI Grade 1",Pins:"6",Keyway:"Schlage Primus (EP)","IC format":"N/A",Finish:"605–626 range",Keying:"KD, MK, GMK"},
+   xref:["CYL-CR-002"],caution:null,
+   proprietary:["Primus sidebar mechanism — patented high security, restricted key duplication","Schlage Primus EP keyway — geographically restricted, factory-controlled"],
+   exclusive:[],
+   variants:[{sku:"20-700 EP 626",finish:"626 – Satin Chrome",excl:false}]},
+
+  {id:"CYL-SCH-003",cat:"cylinder",brand:"Schlage (Allegion)",bs:"Schlage",line:"L Series – Primus XP",model:"20-700-CP",name:"Primus XP High Security Mortise Cylinder – CP Keyway",
+   fields:{Type:"Mortise","Key control":"High Security",Grade:"ANSI Grade 1",Pins:"6",Keyway:"Schlage Primus XP (CP)","IC format":"N/A",Finish:"605–626 range",Keying:"KD, MK, GMK, GGMK"},
+   xref:["CYL-CR-003"],caution:null,
+   proprietary:["Primus XP — highest Schlage key control tier, patented sidebar + keyway","CP keyway — geographically restricted, top-tier access control"],
+   exclusive:[],
+   variants:[{sku:"20-700 CP 626",finish:"626 – Satin Chrome",excl:false}]},
+
+  {id:"CYL-SCH-004",cat:"cylinder",brand:"Schlage (Allegion)",bs:"Schlage",line:"L Series – FSIC",model:"FSIC-L9000",name:"Full Size IC Housing – Mortise",
+   fields:{Type:"Mortise","Key control":"Restricted",Grade:"ANSI Grade 1",Pins:"6",Keyway:"Schlage FSIC","IC format":"Schlage FSIC",Finish:"606, 626",Keying:"KD, MK, GMK, GGMK"},
+   xref:["CYL-CR-004"],caution:"Schlage FSIC and Best SFIC are different IC standards — cores do not interchange.",
+   proprietary:["Schlage FSIC format — manufacturer-specific, not compatible with Best SFIC or other IC standards"],
+   exclusive:[],
+   variants:[{sku:"FSIC-L9000 x 626",finish:"626 – Satin Chrome",excl:false}]},
+
+  // ── CLOSERS ────────────────────────────────────────────────────
+  {id:"CLO-NOR-001",cat:"closer",brand:"ASSA ABLOY (Norton/Rixon)",bs:"Norton/Rixon",line:"7500 Series",model:"7500",name:"7500 Regular Arm Closer",
+   fields:{"ANSI size":"3",Mounting:"Regular arm","Arm type":"Regular","Fire rated":"Yes – UL10C","Max door (lbs)":"125","Max width (in)":"44",Delayed:"Available",Backcheck:"Available",Template:"Norton 7500 template",Finish:"689 – Aluminum","Hold open":"No","Size range":"1–6 adjustable"},
+   xref:["CLO-LCN-001","CLO-DK-001"],caution:null,
+   proprietary:["Norton 7500 mounting template — adapter plates needed to retrofit to LCN or dormakaba prep"],
+   exclusive:[],
+   variants:[{sku:"7500-3 x 689",finish:"689 – Aluminum",excl:false},{sku:"7500-3 x 690",finish:"690 – Primed",excl:false},{sku:"7500-3 x 693",finish:"693 – Dark Bronze",excl:false}]},
+
+  {id:"CLO-NOR-002",cat:"closer",brand:"ASSA ABLOY (Norton/Rixon)",bs:"Norton/Rixon",line:"7500 Series",model:"7500-DA",name:"7500 Regular Arm with Delayed Action",
+   fields:{"ANSI size":"3",Mounting:"Regular arm","Arm type":"Regular","Fire rated":"Yes – UL10C","Max door (lbs)":"125","Max width (in)":"44",Delayed:"Yes – built in",Backcheck:"Available",Template:"Norton 7500 template",Finish:"689 – Aluminum","Hold open":"No","Size range":"1–6 adjustable"},
+   xref:["CLO-LCN-002","CLO-DK-002"],caution:null,
+   proprietary:["Norton 7500 mounting template — adapter plates needed for retrofit"],
+   exclusive:[],
+   variants:[{sku:"7500-DA-3 x 689",finish:"689 – Aluminum",excl:false},{sku:"7500-DA-3 x 693",finish:"693 – Dark Bronze",excl:false}]},
+
+  {id:"CLO-NOR-003",cat:"closer",brand:"ASSA ABLOY (Norton/Rixon)",bs:"Norton/Rixon",line:"7500 Series",model:"7500-PA",name:"7500 Parallel Arm Closer",
+   fields:{"ANSI size":"3",Mounting:"Parallel arm","Arm type":"Parallel","Fire rated":"Yes – UL10C","Max door (lbs)":"125","Max width (in)":"44",Delayed:"Available",Backcheck:"Available",Template:"Norton 7500 template",Finish:"689 – Aluminum","Hold open":"No","Size range":"1–6 adjustable"},
+   xref:["CLO-LCN-003","CLO-DK-003"],caution:null,
+   proprietary:["Norton 7500 mounting template — adapter plates needed for retrofit"],
+   exclusive:[],
+   variants:[{sku:"7500-PA-3 x 689",finish:"689 – Aluminum",excl:false}]},
+
+  {id:"CLO-LCN-001",cat:"closer",brand:"Allegion (LCN)",bs:"LCN",line:"4040XP Series",model:"4040XP",name:"4040XP Regular Arm Closer",
+   fields:{"ANSI size":"3",Mounting:"Regular arm","Arm type":"Regular","Fire rated":"Yes – UL10C","Max door (lbs)":"125","Max width (in)":"44",Delayed:"Available",Backcheck:"Available",Template:"LCN 4040XP template",Finish:"689 – Aluminum","Hold open":"No","Size range":"1–6 adjustable"},
+   xref:["CLO-NOR-001","CLO-DK-001"],caution:"Mounting templates differ — adapter plates required for direct retrofit. Functional performance is equivalent.",
+   proprietary:["LCN 4040XP mounting template — differs from Norton and dormakaba preps"],
+   exclusive:["696 – Satin Chrome","SCUSH (Cushion Stop) option"],
+   variants:[{sku:"4040XP x 689",finish:"689 – Aluminum",excl:false},{sku:"4040XP x 693",finish:"693 – Dark Bronze",excl:false},{sku:"4040XP x 696",finish:"696 – Satin Chrome",excl:true},{sku:"4040XP-SCUSH",finish:"689 – Aluminum",excl:true,note:"Cushion stop — no Norton/dormakaba equivalent"}]},
+
+  {id:"CLO-LCN-002",cat:"closer",brand:"Allegion (LCN)",bs:"LCN",line:"4040XP Series",model:"4040XP-EDA",name:"4040XP Regular Arm with Delayed Action",
+   fields:{"ANSI size":"3",Mounting:"Regular arm","Arm type":"Regular","Fire rated":"Yes – UL10C","Max door (lbs)":"125","Max width (in)":"44",Delayed:"Yes – built in",Backcheck:"Available",Template:"LCN 4040XP template",Finish:"689 – Aluminum","Hold open":"No","Size range":"1–6 adjustable"},
+   xref:["CLO-NOR-002","CLO-DK-002"],caution:"Mounting templates differ — adapter plates required for direct retrofit.",
+   proprietary:["LCN 4040XP mounting template — differs from Norton and dormakaba preps"],
+   exclusive:["696 – Satin Chrome"],
+   variants:[{sku:"4040XP-EDA x 689",finish:"689 – Aluminum",excl:false},{sku:"4040XP-EDA x 696",finish:"696 – Satin Chrome",excl:true}]},
+
+  {id:"CLO-LCN-003",cat:"closer",brand:"Allegion (LCN)",bs:"LCN",line:"4040XP Series",model:"4040XP-PA",name:"4040XP Parallel Arm Closer",
+   fields:{"ANSI size":"3",Mounting:"Parallel arm","Arm type":"Parallel","Fire rated":"Yes – UL10C","Max door (lbs)":"125","Max width (in)":"44",Delayed:"Available",Backcheck:"Available",Template:"LCN 4040XP template",Finish:"689 – Aluminum","Hold open":"No","Size range":"1–6 adjustable"},
+   xref:["CLO-NOR-003","CLO-DK-003"],caution:"Mounting templates differ — adapter plates required for direct retrofit.",
+   proprietary:["LCN 4040XP mounting template — differs from Norton and dormakaba preps"],
+   exclusive:[],
+   variants:[{sku:"4040XP-PA x 689",finish:"689 – Aluminum",excl:false}]},
+
+  {id:"CLO-DK-001",cat:"closer",brand:"dormakaba",bs:"dormakaba",line:"RTS73 Series",model:"RTS73",name:"RTS73 Regular Arm Closer",
+   fields:{"ANSI size":"3",Mounting:"Regular arm","Arm type":"Regular","Fire rated":"Yes – UL10C","Max door (lbs)":"120","Max width (in)":"42",Delayed:"Available",Backcheck:"Available",Template:"dormakaba RTS73 template",Finish:"689 – Aluminum","Hold open":"No","Size range":"1–6 adjustable"},
+   xref:["CLO-NOR-001","CLO-LCN-001"],caution:"Max door weight (120 lbs) and width (42\") are lower than Norton/LCN. Verify door spec before substituting.",
+   proprietary:["dormakaba RTS73 mounting template — differs from Norton and LCN preps"],
+   exclusive:[],
+   variants:[{sku:"RTS73 x 689",finish:"689 – Aluminum",excl:false},{sku:"RTS73 x 690",finish:"690 – Primed",excl:false}]},
+
+  {id:"CLO-DK-002",cat:"closer",brand:"dormakaba",bs:"dormakaba",line:"RTS73 Series",model:"RTS73-EDA",name:"RTS73 Regular Arm with Delayed Action",
+   fields:{"ANSI size":"3",Mounting:"Regular arm","Arm type":"Regular","Fire rated":"Yes – UL10C","Max door (lbs)":"120","Max width (in)":"42",Delayed:"Yes – built in",Backcheck:"Available",Template:"dormakaba RTS73 template",Finish:"689 – Aluminum","Hold open":"No","Size range":"1–6 adjustable"},
+   xref:["CLO-NOR-002","CLO-LCN-002"],caution:"Max door weight (120 lbs) and width (42\") are lower than Norton/LCN. Verify before substituting.",
+   proprietary:["dormakaba RTS73 mounting template — differs from Norton and LCN preps"],
+   exclusive:[],
+   variants:[{sku:"RTS73-EDA x 689",finish:"689 – Aluminum",excl:false}]},
+
+  {id:"CLO-DK-003",cat:"closer",brand:"dormakaba",bs:"dormakaba",line:"RTS73 Series",model:"RTS73-PA",name:"RTS73 Parallel Arm Closer",
+   fields:{"ANSI size":"3",Mounting:"Parallel arm","Arm type":"Parallel","Fire rated":"Yes – UL10C","Max door (lbs)":"120","Max width (in)":"42",Delayed:"Available",Backcheck:"Available",Template:"dormakaba RTS73 template",Finish:"689 – Aluminum","Hold open":"No","Size range":"1–6 adjustable"},
+   xref:["CLO-NOR-003","CLO-LCN-003"],caution:"Max door weight (120 lbs) and width (42\") are lower than Norton/LCN. Verify before substituting.",
+   proprietary:["dormakaba RTS73 mounting template — differs from Norton and LCN preps"],
+   exclusive:[],
+   variants:[{sku:"RTS73-PA x 689",finish:"689 – Aluminum",excl:false}]},
 ];
 
-const CLO=[
-  {id:"l0",cat:"closer",brand:"ASSA ABLOY (Norton/Rixon)",bs:"Norton/Rixon",line:"7500 Series",sku:"7500-3",name:"7500 Regular Arm Closer – Size 3",fields:{"ANSI size":"3",Mounting:"Regular arm","Arm type":"Regular","Fire rated":"Yes – UL10C","Max door (lbs)":"125","Max width (in)":"44",Delayed:"Available",Backcheck:"Available",Template:"Norton 7500 template",Finish:"689 – Aluminum","Hold open":"No","Size range":"1–6 adjustable"},xref:["l4","l7"],caution:null},
-  {id:"l1",cat:"closer",brand:"ASSA ABLOY (Norton/Rixon)",bs:"Norton/Rixon",line:"7500 Series",sku:"7500-DA-3",name:"7500 Regular Arm with Delayed Action – Size 3",fields:{"ANSI size":"3",Mounting:"Regular arm","Arm type":"Regular","Fire rated":"Yes – UL10C","Max door (lbs)":"125","Max width (in)":"44",Delayed:"Yes – built in",Backcheck:"Available",Template:"Norton 7500 template",Finish:"689 – Aluminum","Hold open":"No","Size range":"1–6 adjustable"},xref:["l5","l8"],caution:null},
-  {id:"l2",cat:"closer",brand:"ASSA ABLOY (Norton/Rixon)",bs:"Norton/Rixon",line:"7500 Series",sku:"7500-PA-3",name:"7500 Parallel Arm Closer – Size 3",fields:{"ANSI size":"3",Mounting:"Parallel arm","Arm type":"Parallel","Fire rated":"Yes – UL10C","Max door (lbs)":"125","Max width (in)":"44",Delayed:"Available",Backcheck:"Available",Template:"Norton 7500 template",Finish:"689 – Aluminum","Hold open":"No","Size range":"1–6 adjustable"},xref:["l6","l9"],caution:null},
-  {id:"l3",cat:"closer",brand:"ASSA ABLOY (Norton/Rixon)",bs:"Norton/Rixon",line:"7500 Series",sku:"7500-TJ-3",name:"7500 Top Jamb Closer – Size 3",fields:{"ANSI size":"3",Mounting:"Top jamb","Arm type":"Regular","Fire rated":"Yes – UL10C","Max door (lbs)":"125","Max width (in)":"44",Delayed:"Available",Backcheck:"Available",Template:"Norton 7500 TJ template",Finish:"689 – Aluminum","Hold open":"No","Size range":"1–6 adjustable"},xref:["l4"],caution:null},
-  {id:"l4",cat:"closer",brand:"Allegion (LCN)",bs:"LCN",line:"4040XP Series",sku:"4040XP",name:"4040XP Regular Arm Closer – Size 3",fields:{"ANSI size":"3",Mounting:"Regular arm","Arm type":"Regular","Fire rated":"Yes – UL10C","Max door (lbs)":"125","Max width (in)":"44",Delayed:"Available",Backcheck:"Available",Template:"LCN 4040XP template",Finish:"689 – Aluminum","Hold open":"No","Size range":"1–6 adjustable"},xref:["l0","l7"],caution:"Mounting templates differ — adapter plates required for direct retrofit. Functional performance is equivalent."},
-  {id:"l5",cat:"closer",brand:"Allegion (LCN)",bs:"LCN",line:"4040XP Series",sku:"4040XP-EDA",name:"4040XP Regular Arm with Delayed Action – Size 3",fields:{"ANSI size":"3",Mounting:"Regular arm","Arm type":"Regular","Fire rated":"Yes – UL10C","Max door (lbs)":"125","Max width (in)":"44",Delayed:"Yes – built in",Backcheck:"Available",Template:"LCN 4040XP template",Finish:"689 – Aluminum","Hold open":"No","Size range":"1–6 adjustable"},xref:["l1","l8"],caution:"Mounting templates differ — adapter plates required for direct retrofit. Functional performance is equivalent."},
-  {id:"l6",cat:"closer",brand:"Allegion (LCN)",bs:"LCN",line:"4040XP Series",sku:"4040XP-PA",name:"4040XP Parallel Arm Closer – Size 3",fields:{"ANSI size":"3",Mounting:"Parallel arm","Arm type":"Parallel","Fire rated":"Yes – UL10C","Max door (lbs)":"125","Max width (in)":"44",Delayed:"Available",Backcheck:"Available",Template:"LCN 4040XP template",Finish:"689 – Aluminum","Hold open":"No","Size range":"1–6 adjustable"},xref:["l2","l9"],caution:"Mounting templates differ — adapter plates required for direct retrofit. Functional performance is equivalent."},
-  {id:"l7",cat:"closer",brand:"dormakaba",bs:"dormakaba",line:"RTS73 Series",sku:"RTS73",name:"RTS73 Regular Arm Closer – Size 3",fields:{"ANSI size":"3",Mounting:"Regular arm","Arm type":"Regular","Fire rated":"Yes – UL10C","Max door (lbs)":"120","Max width (in)":"42",Delayed:"Available",Backcheck:"Available",Template:"dormakaba RTS73 template",Finish:"689 – Aluminum","Hold open":"No","Size range":"1–6 adjustable"},xref:["l0","l4"],caution:"Max door weight (120 lbs) and width (42\") are lower than Norton/LCN (125 lbs / 44\"). Verify door specifications before substituting."},
-  {id:"l8",cat:"closer",brand:"dormakaba",bs:"dormakaba",line:"RTS73 Series",sku:"RTS73-EDA",name:"RTS73 Regular Arm with Delayed Action – Size 3",fields:{"ANSI size":"3",Mounting:"Regular arm","Arm type":"Regular","Fire rated":"Yes – UL10C","Max door (lbs)":"120","Max width (in)":"42",Delayed:"Yes – built in",Backcheck:"Available",Template:"dormakaba RTS73 template",Finish:"689 – Aluminum","Hold open":"No","Size range":"1–6 adjustable"},xref:["l1","l5"],caution:"Max door weight (120 lbs) and width (42\") are lower than Norton/LCN. Verify door specifications before substituting."},
-  {id:"l9",cat:"closer",brand:"dormakaba",bs:"dormakaba",line:"RTS73 Series",sku:"RTS73-PA",name:"RTS73 Parallel Arm Closer – Size 3",fields:{"ANSI size":"3",Mounting:"Parallel arm","Arm type":"Parallel","Fire rated":"Yes – UL10C","Max door (lbs)":"120","Max width (in)":"42",Delayed:"Available",Backcheck:"Available",Template:"dormakaba RTS73 template",Finish:"689 – Aluminum","Hold open":"No","Size range":"1–6 adjustable"},xref:["l2","l6"],caution:"Max door weight (120 lbs) and width (42\") are lower than Norton/LCN. Verify door specifications before substituting."},
-];
-
-const ALL=[...CYL,...CLO];
+const IDX=Object.fromEntries(PARENTS.map(p=>[p.id,p]));
 let activeCat="all", selected=null;
 
 const HINTS={
@@ -441,6 +337,17 @@ const HINTS={
   cylinder:"Try: <code>ML2000</code> &nbsp;·&nbsp; <code>Primus</code> &nbsp;·&nbsp; <code>626</code> &nbsp;·&nbsp; <code>SFIC</code> &nbsp;·&nbsp; <code>20-001</code>",
   closer:"Try: <code>Norton 7500</code> &nbsp;·&nbsp; <code>4040XP</code> &nbsp;·&nbsp; <code>parallel arm</code> &nbsp;·&nbsp; <code>delayed action</code> &nbsp;·&nbsp; <code>RTS73</code>"
 };
+
+function pool(){return activeCat==="all"?PARENTS:PARENTS.filter(p=>p.cat===activeCat);}
+
+function sidx(p){
+  return[p.brand,p.bs,p.line,p.model,p.name,p.cat,
+    ...Object.values(p.fields),
+    ...(p.proprietary||[]),
+    ...(p.exclusive||[]),
+    ...p.variants.map(v=>v.sku+" "+v.finish)
+  ].join(" ").toLowerCase();
+}
 
 function setCat(cat){
   activeCat=cat;
@@ -451,51 +358,29 @@ function setCat(cat){
   document.getElementById("searchResults").innerHTML="";
 }
 
-function pool(){return activeCat==="all"?ALL:activeCat==="cylinder"?CYL:CLO;}
-
-function idx(r){return[r.brand,r.bs,r.line,r.sku,r.name,r.cat,...Object.values(r.fields)].join(" ").toLowerCase();}
-
-function brandBadge(b,bs){
-  const cls=b.includes("ASSA ABLOY")?"b-aa":b.includes("Allegion")||b.includes("Schlage")?"b-al":"b-dk";
-  return `<span class="badge ${cls}">${bs}</span>`;
-}
-function catTag(cat){
-  return cat==="cylinder"?`<span class="cat-tag cat-cyl">Cylinder</span>`:`<span class="cat-tag cat-cls">Closer</span>`;
-}
-function confBadge(c){
-  const cls=c==="High"?"b-high":c==="Incompatible"?"b-incompat":"b-partial";
-  const lbl=c==="High"?"Direct equivalent":c==="Incompatible"?"Not interchangeable":"Partial interchangeability";
-  return `<span class="badge ${cls}">${lbl}</span>`;
-}
-function barColor(pct){return pct>=90?"var(--txtsuccess)":pct>=70?"var(--txtwarn)":"var(--txtdanger)";}
-
-function pips(w){
-  const f=w>=25?3:w>=12?2:1;
-  return `<div class="wt-pip">${[0,1,2].map(i=>`<div class="pip${i<f?" on":""}"></div>`).join("")}</div>`;
-}
-
-function tierLabel(cat,t){
-  const m={cylinder:{t1:"Functional core",t2:"Performance",t3:"Installation",t4:"Specification"},
-           closer:{t1:"Functional core",t2:"Performance envelope",t3:"Installation",t4:"Specification"}};
-  return m[cat][t];
-}
+function brandColor(b){return b.includes("ASSA ABLOY")?"var(--txtinfo)":b.includes("Allegion")||b.includes("Schlage")?"var(--txtwarn)":"var(--txtsuccess)";}
+function brandBadge(b,bs){const cls=b.includes("ASSA ABLOY")?"b-aa":b.includes("Allegion")||b.includes("Schlage")?"b-al":"b-dk";return`<span class="badge ${cls}">${bs}</span>`;}
+function catTag(c){return c==="cylinder"?`<span class="cat-tag cat-cyl">Cylinder</span>`:`<span class="cat-tag cat-cls">Closer</span>`;}
+function confBadge(c){const cls=c==="High"?"b-high":c==="Incompatible"?"b-incompat":"b-partial";const lbl=c==="High"?"Direct equivalent":c==="Incompatible"?"Not interchangeable":"Partial interchangeability";return`<span class="badge ${cls}">${lbl}</span>`;}
+function barColor(p){return p>=90?"var(--txtsuccess)":p>=70?"var(--txtwarn)":"var(--txtdanger)";}
+function pips(w){const f=w>=25?3:w>=12?2:1;return`<div class="wt-pip">${[0,1,2].map(i=>`<div class="pip${i<f?" on":""}"></div>`).join("")}</div>`;}
+function tierLabel(cat,t){return({cylinder:{t1:"Functional core",t2:"Performance",t3:"Installation",t4:"Specification"},closer:{t1:"Functional core",t2:"Performance",t3:"Installation",t4:"Specification"}})[cat][t];}
 
 function calcScore(src,cmp){
-  const W=src.cat==="cylinder"?CYL_WEIGHTS:CLOSER_WEIGHTS;
+  const W=src.cat==="cylinder"?CW:LW;
   const t1k=src.cat==="cylinder"?["Type","Grade","Key control","IC format"]:["ANSI size","Mounting","Arm type","Fire rated"];
   const t2k=src.cat==="cylinder"?["Pins","Keyway"]:["Max door (lbs)","Max width (in)","Delayed","Backcheck"];
   const t3k=src.cat==="cylinder"?[]:["Template"];
   const tierOf=k=>t1k.includes(k)?"t1":t2k.includes(k)?"t2":t3k.includes(k)?"t3":"t4";
   const tiers={t1:{e:0,m:0},t2:{e:0,m:0},t3:{e:0,m:0},t4:{e:0,m:0}};
-  let te=0,tm=0;
-  const detail={};
+  let te=0,tm=0;const detail={};
   Object.keys(W).forEach(k=>{
     const w=W[k],sv=src.fields[k],cv=cmp.fields[k];
     if(sv===undefined||cv===undefined)return;
     const match=sv===cv;
     const numLow=["Max door (lbs)","Max width (in)"].includes(k)&&!match&&parseFloat(cv)<parseFloat(sv);
     const t=tierOf(k);
-    tiers[t].m+=w; tm+=w;
+    tiers[t].m+=w;tm+=w;
     if(match){tiers[t].e+=w;te+=w;}
     detail[k]={w,match,numLow,sv,cv,tier:t};
   });
@@ -508,23 +393,23 @@ function doSearch(){
   const q=document.getElementById("qi").value.trim().toLowerCase();
   const area=document.getElementById("searchResults");
   if(!q){area.innerHTML="";return;}
-  const hits=pool().filter(r=>idx(r).includes(q));
-  if(!hits.length){
-    area.innerHTML=`<div class="empty">No products matched "<strong>${q}</strong>". Try a broader term or switch category.</div>`;
-    return;
-  }
+  const hits=pool().filter(p=>sidx(p).includes(q));
+  if(!hits.length){area.innerHTML=`<div class="empty">No products matched "<strong>${q}</strong>". Try a broader term.</div>`;return;}
   area.innerHTML=`<p class="slabel">${hits.length} product${hits.length!==1?"s":""} found — select yours to see comparables</p>`
-    +hits.map(r=>{
-      const meta=r.cat==="cylinder"?`${r.fields["Type"]} · ${r.fields["Key control"]}`:
-        `${r.fields["Mounting"]} · Size ${r.fields["ANSI size"]}`;
-      return `<div class="result-row" onclick="selectProduct('${r.id}')">
+    +hits.map(p=>{
+      const meta=p.cat==="cylinder"?`${p.fields.Type} · ${p.fields["Key control"]}`:
+        `${p.fields.Mounting} · Size ${p.fields["ANSI size"]}`;
+      const propTag=p.proprietary&&p.proprietary.length?`<span class="badge b-prop">Proprietary features</span>`:"";
+      const exclTag=p.exclusive&&p.exclusive.length?`<span class="badge" style="background:var(--bgprop);color:var(--txtprop);font-size:10px">Exclusive finishes/options</span>`:"";
+      return`<div class="result-row" onclick="selectProduct('${p.id}')">
         <div style="flex:1;min-width:0">
-          <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
-            ${catTag(r.cat)}
-            <span style="font-size:11px;font-weight:500;color:${r.brand.includes("ASSA ABLOY")?"var(--txtinfo)":r.brand.includes("Allegion")||r.brand.includes("Schlage")?"var(--txtwarn)":"var(--txtsuccess)"}">${r.bs} · ${r.line}</span>
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:3px">
+            ${catTag(p.cat)}
+            <span style="font-size:11px;font-weight:500;color:${brandColor(p.brand)}">${p.bs} · ${p.line}</span>
+            ${propTag}${exclTag}
           </div>
-          <div class="rr-name">${r.name}</div>
-          <div class="rr-sku">${r.sku}</div>
+          <div class="rr-name">${p.name}</div>
+          <div class="rr-sku">${p.model}</div>
         </div>
         <div style="font-size:11px;color:var(--txt2);margin-left:auto;text-align:right;flex-shrink:0;padding-left:12px">${meta}</div>
         <div style="font-size:14px;color:var(--txt3);padding-left:8px">›</div>
@@ -535,7 +420,7 @@ function doSearch(){
 document.getElementById("qi").addEventListener("keydown",e=>{if(e.key==="Enter")doSearch();});
 
 function selectProduct(id){
-  selected=ALL.find(r=>r.id===id);
+  selected=IDX[id];
   document.getElementById("step1").style.display="none";
   document.getElementById("step2").style.display="block";
   document.getElementById("s1").className="step done";
@@ -544,75 +429,82 @@ function selectProduct(id){
   renderComparables();
 }
 
+let variantOpen={};
+
+function toggleVariants(id){
+  variantOpen[id]=!variantOpen[id];
+  const body=document.getElementById("vb-"+id);
+  const btn=document.getElementById("vt-"+id);
+  if(body){body.classList.toggle("open",variantOpen[id]);}
+  if(btn){btn.textContent=variantOpen[id]?"Hide variants ↑":"Show variants ("+IDX[id].variants.length+") ↓";}
+}
+
 function renderComparables(){
   const src=selected;
-  const scored=src.xref.map(id=>ALL.find(r=>r.id===id)).filter(Boolean)
+  variantOpen={};
+  const scored=src.xref.map(id=>IDX[id]).filter(Boolean)
     .map(c=>({...c,score:calcScore(src,c)}))
     .sort((a,b)=>b.score.pct-a.score.pct);
 
   const tooltip=`<div class="iw">
     <span style="font-size:10px;font-weight:500;color:var(--txt2);text-transform:uppercase;letter-spacing:.05em">Selected product</span>
     <span class="iico">i</span>
-    <div class="tip"><div class="tn">${src.name}</div><div class="ts">${src.sku}</div></div>
+    <div class="tip"><div class="tn">${src.name}</div><div class="ts">${src.model}</div></div>
   </div>`;
 
   document.getElementById("compResults").innerHTML=
     `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
-      <p class="slabel" style="margin-bottom:0">${scored.length} comparable${scored.length!==1?"s":""} · ${src.cat==="cylinder"?"cylinders &amp; cores":"door closers"}</p>
+      <p class="slabel" style="margin-bottom:0">${scored.length} comparable${scored.length!==1?"s":""}</p>
       <button class="change-btn" onclick="goBack()">← Change product</button>
     </div>`+
     scored.map(r=>{
       const{pct,conf,tiers,detail}=r.score;
       const col=barColor(pct);
+
       const tierCards=["t1","t2","t3","t4"].map(t=>{
         if(tiers[t].m===0)return"";
         const tp=Math.round((tiers[t].e/tiers[t].m)*100);
         const cls=tp>=90?"good":tp>=70?"mid":"low";
-        return `<div class="tier-card">
-          <div class="tier-label">${tierLabel(src.cat,t)}</div>
-          <div class="tier-score ${cls}">${tp}%</div>
-          <div class="tier-sub">${tiers[t].e.toFixed(0)} / ${tiers[t].m.toFixed(0)} pts</div>
-        </div>`;
+        return`<div class="tier-card"><div class="tier-label">${tierLabel(src.cat,t)}</div><div class="tier-score ${cls}">${tp}%</div><div class="tier-sub">${tiers[t].e.toFixed(0)} / ${tiers[t].m.toFixed(0)} pts</div></div>`;
       }).join("");
 
       const rows=Object.entries(detail).map(([k,d])=>{
         const cls=d.numLow?"vbad":d.match?"vsame":"vdiff";
         const tick=d.match?" ✓":d.numLow?" ✗":"";
-        return `<tr>
-          <td class="fld">${k}</td>
-          <td class="wt">${pips(d.w)}</td>
-          <td class="tv">${d.cv}</td>
-          <td class="sv ${cls}">${d.sv}${tick}</td>
-        </tr>`;
+        return`<tr><td class="fld">${k}</td><td class="wt">${pips(d.w)}</td><td class="tv">${d.cv}</td><td class="sv ${cls}">${d.sv}${tick}</td></tr>`;
       }).join("");
 
       const cautionHtml=r.caution?`<div class="caution-box"><strong>Note:</strong> ${r.caution}</div>`:"";
 
-      return `<div class="comp-card">
-        <div class="comp-hdr">
-          <div style="min-width:0">
-            ${brandBadge(r.brand,r.bs)}
-            <div style="font-size:14px;font-weight:500;color:var(--txt);margin-top:4px">${r.name}</div>
-            <div style="font-size:11px;font-family:var(--mono);color:var(--txt2);margin-top:2px">${r.sku}</div>
-          </div>
-          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0;padding-left:12px">
-            ${confBadge(conf)}
-            <span style="font-size:13px;font-weight:500;color:${col}">${pct}% weighted match</span>
-          </div>
+      const propHtml=(r.proprietary&&r.proprietary.length)?
+        `<div class="prop-row"><span class="badge b-prop" style="flex-shrink:0">Proprietary</span><span class="prop-row-txt">${r.proprietary.join(" &nbsp;·&nbsp; ")}</span></div>`:"";
+
+      const exclHtml=(r.exclusive&&r.exclusive.length)?
+        `<div class="prop-row" style="background:var(--bgprop)"><span class="badge" style="background:var(--bgprop);color:var(--txtprop);font-size:10px;font-weight:500;flex-shrink:0;border:0.5px solid var(--txtprop);border-radius:99px;padding:3px 8px">Exclusive</span><span class="prop-row-txt" style="color:var(--txtprop)"><strong>Not available from competitor brands:</strong> ${r.exclusive.join(", ")}</span></div>`:"";
+
+      const varChips=r.variants.map(v=>{
+        const note=v.note?` <span style="font-weight:400;font-size:10px">(${v.note})</span>`:"";
+        return`<span class="variant-chip${v.excl?" excl":""}">${v.finish}${v.excl?" ★":""}${note}</span>`;
+      }).join("");
+
+      const varSection=`<div class="variants-section">
+        <button class="variants-toggle" id="vt-${r.id}" onclick="toggleVariants('${r.id}')">Show variants (${r.variants.length}) ↓</button>
+        <div class="variants-body" id="vb-${r.id}">${varChips}<div style="font-size:11px;color:var(--txt3);margin-top:6px">★ Exclusive — not available from selected product's brand</div></div>
+      </div>`;
+
+      return`<div class="comp-card">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:1rem">
+          <div style="min-width:0">${brandBadge(r.brand,r.bs)}<div style="font-size:14px;font-weight:500;color:var(--txt);margin-top:4px">${r.name}</div><div style="font-size:11px;font-family:var(--mono);color:var(--txt2);margin-top:2px">${r.model}</div></div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0;padding-left:12px">${confBadge(conf)}<span style="font-size:13px;font-weight:500;color:${col}">${pct}% weighted match</span></div>
         </div>
         <div class="score-bar-track"><div class="score-bar-fill" style="width:${pct}%;background:${col}"></div></div>
-        <div style="margin-bottom:1rem"></div>
         <div class="tier-grid">${tierCards}</div>
-        ${cautionHtml}
+        ${cautionHtml}${propHtml}${exclHtml}
         <table class="diff-table">
-          <thead><tr>
-            <th style="width:130px"></th>
-            <th style="width:60px;text-align:center">Weight</th>
-            <th>This product</th>
-            <th class="r">${tooltip}</th>
-          </tr></thead>
+          <thead><tr><th style="width:130px"></th><th style="width:56px;text-align:center">Weight</th><th>This product</th><th class="r">${tooltip}</th></tr></thead>
           <tbody>${rows}</tbody>
         </table>
+        ${varSection}
       </div>`;
     }).join("");
 }

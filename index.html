@@ -4,248 +4,81 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>DHXR — Door Hardware Cross Reference</title>
-  <meta name="description" content="Cross-reference door hardware products across brands. Cylinders, closers and more." />
-
-  <!--
-  ============================================================
-  DHXR — Door Hardware Cross Reference
-  Version: 0.2 (Prototype)
-  Last updated: 2026-04
-
-  OVERVIEW
-  --------
-  This is a single-file web application. Everything — structure,
-  styling, data, and logic — lives in this one HTML file.
-
-  No server is required. The browser downloads this file and runs
-  it entirely locally. This makes it easy to host (GitHub Pages,
-  Netlify, etc.) and share as a single file for testing.
-
-  WHEN THE DATA GROWS
-  -------------------
-  At prototype scale, product data is stored directly in the
-  JavaScript PARENTS array below. As the product database grows,
-  the data layer should be extracted to a separate JSON file or
-  database, and fetched via an API. The scoring and rendering
-  logic would remain the same — only the data source changes.
-
-  FILE STRUCTURE
-  --------------
-  1. <style>   — All visual styling (CSS)
-  2. <header>  — Top navigation bar with logo
-  3. <main>    — The main app interface (search + results)
-  4. <footer>  — Attribution and version note
-  5. <script>  — All application logic (JavaScript)
-       a. Scoring weight tables
-       b. Product database (PARENTS array)
-       c. Utility / helper functions
-       d. Search logic
-       e. Product selection and comparison rendering
-       f. Navigation (back button, category filter)
-
-  CONTRIBUTING
-  ------------
-  - To add a product: add a new object to the PARENTS array
-  - To adjust scoring: edit the CW (cylinders) or LW (closers) weight tables
-  - To add a product category: add a weight table, update calcScore(), 
-    add a category button, and add products to PARENTS
-  - Always test in both light and dark mode (browser setting)
-  ============================================================
-  -->
-
+  <meta name="description" content="Cross-reference door hardware products across brands. Cylinders, closers, smart locks and more." />
   <style>
-    /*
-    ============================================================
-    CSS RESET & ROOT VARIABLES
-    ------------------------------------------------------------
-    CSS variables (custom properties) defined here are used
-    throughout the stylesheet. They automatically switch between
-    light and dark values based on the user's system preference.
-
-    Naming convention:
-      --bg   = background colors (1=white, 2=surface, 3=page bg)
-      --txt  = text colors (1=primary, 2=muted, 3=hint)
-      --bdr  = border colors (opacity-based)
-      --r-*  = border radius tokens
-    ============================================================
-    */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     :root {
-      /* Light mode colors */
       --bg:#ffffff; --bg2:#f7f7f5; --bg3:#f0efeb;
       --bginfo:#e6f1fb; --bgwarn:#faeeda; --bgsuccess:#eaf3de; --bgdanger:#fcebeb;
-      --bgprop:#f3e5f5;   /* purple tint — used for proprietary/exclusive tags */
+      --bgprop:#f3e5f5; --bgconnect:#d5f5e3;
       --txt:#1a1a1a; --txt2:#6b6b6b; --txt3:#9a9a9a;
       --txtinfo:#0c447c; --txtwarn:#854f0b; --txtsuccess:#3b6d11; --txtdanger:#a32d2d;
-      --txtprop:#4a235a;  /* dark purple — text on proprietary backgrounds */
+      --txtprop:#4a235a; --txtconnect:#145a32;
       --bdr:rgba(0,0,0,0.10); --bdr2:rgba(0,0,0,0.18); --bdr3:rgba(0,0,0,0.28);
       --r-md:8px; --r-lg:12px;
       --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
-      --mono:"SF Mono","Fira Code",monospace; /* used for SKU/part number display */
+      --mono:"SF Mono","Fira Code",monospace;
     }
-
     @media(prefers-color-scheme:dark){
-      /* Dark mode overrides — same variable names, different values */
       :root{
         --bg:#1c1c1e; --bg2:#2c2c2e; --bg3:#3a3a3c;
         --bginfo:#0c2a44; --bgwarn:#3d2600; --bgsuccess:#1a3008; --bgdanger:#3d0f0f;
-        --bgprop:#2a1040;
+        --bgprop:#2a1040; --bgconnect:#0a2a18;
         --txt:#f0f0f0; --txt2:#a0a0a0; --txt3:#6a6a6a;
         --txtinfo:#85b7eb; --txtwarn:#fac775; --txtsuccess:#c0dd97; --txtdanger:#f09595;
-        --txtprop:#ce93d8;
+        --txtprop:#ce93d8; --txtconnect:#9fe1cb;
         --bdr:rgba(255,255,255,0.10); --bdr2:rgba(255,255,255,0.18); --bdr3:rgba(255,255,255,0.28);
       }
     }
+    body { font-family:var(--font); background:var(--bg3); color:var(--txt); min-height:100vh; font-size:15px; line-height:1.6; }
 
-    body {
-      font-family:var(--font);
-      background:var(--bg3);
-      color:var(--txt);
-      min-height:100vh;
-      font-size:15px;
-      line-height:1.6;
-    }
+    header { background:var(--bg); border-bottom:0.5px solid var(--bdr2); padding:0 2rem; height:56px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:100; }
+    .h-brand { display:flex; align-items:baseline; gap:10px; }
+    .h-name  { font-size:18px; font-weight:500; color:var(--txt); letter-spacing:-.01em; }
+    .h-full  { font-size:12px; color:var(--txt2); }
+    .h-tag   { font-size:11px; background:var(--bgwarn); color:var(--txtwarn); padding:3px 10px; border-radius:99px; font-weight:500; }
 
-    /*
-    ── HEADER
-    Sticky top bar. Contains the DHXR wordmark and prototype tag.
-    position:sticky keeps it visible as the user scrolls.
-    z-index:100 ensures it sits above all page content.
-    */
-    header {
-      background:var(--bg);
-      border-bottom:0.5px solid var(--bdr2);
-      padding:0 2rem;
-      height:56px;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      position:sticky;
-      top:0;
-      z-index:100;
-    }
-    .h-brand  { display:flex; align-items:baseline; gap:10px; }
-    .h-name   { font-size:18px; font-weight:500; color:var(--txt); letter-spacing:-.01em; }
-    .h-full   { font-size:12px; color:var(--txt2); }
-    .h-tag    { font-size:11px; background:var(--bgwarn); color:var(--txtwarn); padding:3px 10px; border-radius:99px; font-weight:500; }
-
-    /* ── MAIN LAYOUT — centered, max 880px wide */
     main { max-width:880px; margin:0 auto; padding:2rem 1.5rem 4rem; }
     .page-intro { margin-bottom:2rem; }
     .page-intro h1 { font-size:20px; font-weight:500; margin-bottom:5px; }
     .page-intro p  { font-size:14px; color:var(--txt2); }
 
-    /*
-    ── STEP INDICATOR BAR
-    Shows the user which step they're on (1=Search, 2=Compare).
-    Active step has a filled circle. Done step has a muted circle.
-    .step-div is the horizontal line connecting the steps.
-    */
     .step-bar { display:flex; align-items:center; gap:8px; margin-bottom:1.75rem; }
-    .step     { display:flex; align-items:center; gap:6px; font-size:12px; color:var(--txt3); }
+    .step { display:flex; align-items:center; gap:6px; font-size:12px; color:var(--txt3); }
     .step.active { color:var(--txt); font-weight:500; }
     .step.done   { color:var(--txt2); }
-    .step-num {
-      width:20px; height:20px; border-radius:50%;
-      border:0.5px solid var(--bdr2);
-      display:flex; align-items:center; justify-content:center;
-      font-size:11px; font-weight:500; flex-shrink:0;
-    }
+    .step-num { width:20px; height:20px; border-radius:50%; border:0.5px solid var(--bdr2); display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:500; flex-shrink:0; }
     .step.active .step-num { background:var(--txt); color:var(--bg); border-color:var(--txt); }
     .step.done   .step-num { background:var(--bg2); }
     .step-div { flex:1; height:0.5px; background:var(--bdr); }
 
-    /*
-    ── CATEGORY FILTER BUTTONS
-    Three buttons: All / Cylinders / Closers.
-    The active button gets a blue border and background to indicate
-    which category the user is currently filtering by.
-    */
-    .cat-row { display:flex; gap:8px; margin-bottom:1rem; }
-    .cat-btn {
-      flex:1; padding:10px;
-      border-radius:var(--r-md);
-      border:0.5px solid var(--bdr2);
-      background:var(--bg);
-      cursor:pointer; text-align:left;
-      transition:background .15s;
-    }
+    .cat-row { display:flex; gap:8px; margin-bottom:1rem; flex-wrap:wrap; }
+    .cat-btn { flex:1; min-width:120px; padding:10px; border-radius:var(--r-md); border:0.5px solid var(--bdr2); background:var(--bg); cursor:pointer; text-align:left; transition:background .15s; }
     .cat-btn:hover { background:var(--bg2); }
     .cat-btn.active { border:2px solid var(--txtinfo); background:var(--bginfo); }
     .cat-btn.active .cat-name { color:var(--txtinfo); }
     .cat-name { font-size:13px; font-weight:500; color:var(--txt); margin-bottom:2px; }
     .cat-sub  { font-size:11px; color:var(--txt2); }
 
-    /* ── SEARCH ROW — input + button side by side */
     .search-row { display:flex; gap:8px; margin-bottom:.5rem; }
-    .search-row input {
-      flex:1; font-size:14px; padding:0 12px; height:38px;
-      border:0.5px solid var(--bdr2); border-radius:var(--r-md);
-      background:var(--bg); color:var(--txt); font-family:var(--font); outline:none;
-    }
+    .search-row input { flex:1; font-size:14px; padding:0 12px; height:38px; border:0.5px solid var(--bdr2); border-radius:var(--r-md); background:var(--bg); color:var(--txt); font-family:var(--font); outline:none; }
     .search-row input:focus { border-color:var(--bdr3); box-shadow:0 0 0 3px rgba(0,0,0,.06); }
     .search-row input::placeholder { color:var(--txt3); }
-    .search-row button {
-      padding:0 20px; height:38px; font-size:13px; font-weight:500;
-      border:0.5px solid var(--bdr2); border-radius:var(--r-md);
-      background:var(--bg); color:var(--txt); cursor:pointer; font-family:var(--font);
-      white-space:nowrap; transition:background .15s;
-    }
-    .search-row button:hover  { background:var(--bg2); }
-    .search-row button:active { transform:scale(0.98); }
+    .search-row button { padding:0 20px; height:38px; font-size:13px; font-weight:500; border:0.5px solid var(--bdr2); border-radius:var(--r-md); background:var(--bg); color:var(--txt); cursor:pointer; font-family:var(--font); white-space:nowrap; transition:background .15s; }
+    .search-row button:hover { background:var(--bg2); }
 
-    /* ── HINT TEXT — example search terms shown below the search bar */
     .hint { font-size:12px; color:var(--txt3); margin-bottom:1.5rem; }
-    .hint code {
-      font-family:var(--mono); background:var(--bg2);
-      padding:1px 5px; border-radius:4px; font-size:11px; color:var(--txt2);
-    }
+    .hint code { font-family:var(--mono); background:var(--bg2); padding:1px 5px; border-radius:4px; font-size:11px; color:var(--txt2); }
+    .slabel { font-size:11px; font-weight:500; color:var(--txt2); text-transform:uppercase; letter-spacing:.06em; margin-bottom:.75rem; }
 
-    /* ── SECTION LABEL — small uppercase label above result lists */
-    .slabel {
-      font-size:11px; font-weight:500; color:var(--txt2);
-      text-transform:uppercase; letter-spacing:.06em; margin-bottom:.75rem;
-    }
-
-    /*
-    ── SEARCH RESULT ROWS (Step 1)
-    Each matching product appears as a clickable row in Step 1.
-    Clicking a row calls selectProduct() and moves to Step 2.
-    */
-    .result-row {
-      display:flex; align-items:center; gap:12px;
-      padding:10px 14px; border-radius:var(--r-md);
-      border:0.5px solid var(--bdr); background:var(--bg);
-      margin-bottom:6px; cursor:pointer;
-      transition:border-color .15s, background .15s;
-    }
+    .result-row { display:flex; align-items:center; gap:12px; padding:10px 14px; border-radius:var(--r-md); border:0.5px solid var(--bdr); background:var(--bg); margin-bottom:6px; cursor:pointer; transition:border-color .15s, background .15s; }
     .result-row:hover { border-color:var(--bdr3); background:var(--bg2); }
     .rr-name { font-size:13px; font-weight:500; color:var(--txt); }
     .rr-sku  { font-size:11px; font-family:var(--mono); color:var(--txt2); margin-top:1px; }
 
-    /*
-    ── COMPARABLE PRODUCT CARDS (Step 2)
-    Each cross-referenced product gets its own card.
-    Cards contain: brand badge, score bar, tier breakdown,
-    caution note, proprietary flags, spec diff table, and variant drawer.
-    */
-    .comp-card {
-      background:var(--bg); border:0.5px solid var(--bdr);
-      border-radius:var(--r-lg); padding:1.25rem; margin-bottom:.75rem;
-    }
+    .comp-card { background:var(--bg); border:0.5px solid var(--bdr); border-radius:var(--r-lg); padding:1.25rem; margin-bottom:.75rem; }
 
-    /*
-    ── BADGES
-    Small pill-shaped labels used for brand, confidence, category, and flags.
-    Naming: b-aa=ASSA ABLOY, b-al=Allegion, b-dk=dormakaba,
-            b-high/partial/incompat = match confidence levels,
-            b-prop = proprietary feature tag
-    */
-    .badge {
-      font-size:11px; font-weight:500; padding:3px 10px;
-      border-radius:99px; white-space:nowrap; flex-shrink:0;
-    }
+    .badge { font-size:11px; font-weight:500; padding:3px 10px; border-radius:99px; white-space:nowrap; flex-shrink:0; }
     .b-aa      { background:var(--bginfo);    color:var(--txtinfo); }
     .b-al      { background:var(--bgwarn);    color:var(--txtwarn); }
     .b-dk      { background:#ede7f6;          color:#4527a0; }
@@ -253,1233 +86,595 @@
     .b-partial { background:var(--bgwarn);    color:var(--txtwarn); }
     .b-incompat{ background:var(--bgdanger);  color:var(--txtdanger); }
     .b-prop    { background:var(--bgprop);    color:var(--txtprop); font-size:10px; }
+    .b-connect { background:var(--bgconnect); color:var(--txtconnect); font-size:10px; }
 
-    /* ── CATEGORY TAGS — small colored pill showing Cylinder or Closer */
     .cat-tag { font-size:10px; font-weight:500; padding:2px 7px; border-radius:4px; text-transform:uppercase; letter-spacing:.04em; }
     .cat-cyl { background:#e1f5ee; color:#085041; }
     .cat-cls { background:#faeeda; color:#633806; }
+    .cat-slk { background:#e8daef; color:#4a235a; }
 
-    /*
-    ── SCORE BAR
-    Visual representation of the weighted match percentage.
-    Color changes based on score: green ≥90%, amber 70–89%, red <70%.
-    The fill width is set dynamically via inline style in JavaScript.
-    */
     .score-bar-track { height:6px; background:var(--bg2); border-radius:99px; overflow:hidden; margin-bottom:1rem; }
     .score-bar-fill  { height:100%; border-radius:99px; }
 
-    /*
-    ── TIER BREAKDOWN GRID
-    Shows sub-scores for each tier: Functional Core, Performance,
-    Installation, and Specification. Uses auto-fit grid so it
-    wraps cleanly at any screen width.
-    */
-    .tier-grid  { display:grid; grid-template-columns:repeat(auto-fit,minmax(110px,1fr)); gap:6px; margin-bottom:1rem; }
-    .tier-card  { background:var(--bg2); border-radius:var(--r-md); padding:8px 10px; }
+    .tier-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(110px,1fr)); gap:6px; margin-bottom:1rem; }
+    .tier-card { background:var(--bg2); border-radius:var(--r-md); padding:8px 10px; }
     .tier-label { font-size:10px; font-weight:500; text-transform:uppercase; letter-spacing:.05em; color:var(--txt2); margin-bottom:4px; }
     .tier-score { font-size:18px; font-weight:500; }
     .tier-score.good { color:var(--txtsuccess); }
     .tier-score.mid  { color:var(--txtwarn); }
     .tier-score.low  { color:var(--txtdanger); }
-    .tier-sub   { font-size:11px; color:var(--txt2); margin-top:1px; }
+    .tier-sub { font-size:11px; color:var(--txt2); margin-top:1px; }
 
-    /* ── CAUTION BOX — amber warning shown when a notable spec difference exists */
-    .caution-box {
-      background:var(--bgwarn); border-radius:var(--r-md);
-      padding:8px 12px; font-size:12px; color:var(--txtwarn); margin-bottom:.75rem;
-    }
+    .caution-box { background:var(--bgwarn); border-radius:var(--r-md); padding:8px 12px; font-size:12px; color:var(--txtwarn); margin-bottom:.75rem; }
     .caution-box strong { font-weight:500; }
 
-    /*
-    ── PROPRIETARY / EXCLUSIVE ROW
-    Purple highlighted rows that surface brand-specific features.
-    Two uses:
-      1. Proprietary — flags something that makes a product non-interchangeable
-         (e.g. patented keyway, brand-specific mounting template)
-      2. Exclusive — flags a finish or option the competitor doesn't offer
-         (used as a rep selling point even on Partial matches)
-    */
-    .prop-row {
-      display:flex; align-items:flex-start; gap:8px;
-      background:var(--bgprop); border-radius:var(--r-md);
-      padding:8px 12px; margin-bottom:.75rem;
-    }
-    .prop-row-txt { font-size:12px; color:var(--txtprop); }
+    .prop-row { display:flex; align-items:flex-start; gap:8px; border-radius:var(--r-md); padding:8px 12px; margin-bottom:.6rem; }
+    .prop-row-txt { font-size:12px; }
     .prop-row-txt strong { font-weight:500; }
 
-    /*
-    ── SPEC COMPARISON TABLE
-    Side-by-side diff table: field name | weight pips | this product | selected product.
-    table-layout:fixed prevents long values from breaking the layout.
-    Color classes applied to the "selected product" column:
-      .vsame = match (muted, shown with ✓)
-      .vdiff = mismatch (amber)
-      .vbad  = numeric shortfall (red, shown with ✗) — e.g. lower max door weight
-    */
     .diff-table { width:100%; border-collapse:collapse; font-size:12px; table-layout:fixed; }
-    .diff-table th {
-      font-size:10px; font-weight:500; color:var(--txt2);
-      text-transform:uppercase; letter-spacing:.05em;
-      padding:4px 8px 6px; text-align:left;
-      border-bottom:0.5px solid var(--bdr);
-    }
+    .diff-table th { font-size:10px; font-weight:500; color:var(--txt2); text-transform:uppercase; letter-spacing:.05em; padding:4px 8px 6px; text-align:left; border-bottom:0.5px solid var(--bdr); }
     .diff-table th.r { text-align:right; }
-    .diff-table td {
-      padding:5px 8px; border-bottom:0.5px solid var(--bdr);
-      vertical-align:middle; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
-    }
+    .diff-table td { padding:5px 8px; border-bottom:0.5px solid var(--bdr); vertical-align:middle; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
     .diff-table tr:last-child td { border-bottom:none; }
-    .diff-table td.fld { width:130px; color:var(--txt2); }  /* field label */
-    .diff-table td.wt  { width:56px; text-align:center; }   /* weight pip dots */
-    .diff-table td.tv  { font-weight:500; color:var(--txt); } /* this product value */
-    .diff-table td.sv  { text-align:right; }                  /* selected product value */
+    .diff-table td.fld { width:130px; color:var(--txt2); }
+    .diff-table td.wt  { width:56px; text-align:center; }
+    .diff-table td.tv  { font-weight:500; color:var(--txt); }
+    .diff-table td.sv  { text-align:right; }
     .vsame { color:var(--txt2); }
     .vdiff { color:var(--txtwarn); font-weight:500; }
     .vbad  { color:var(--txtdanger); font-weight:500; }
+    .vgood { color:var(--txtsuccess); font-weight:500; }
 
-    /*
-    ── WEIGHT PIP DOTS
-    Visual indicator of field weight in the comparison table.
-    3 dots = high weight (functional core fields like ANSI size, mounting type)
-    2 dots = medium weight (performance fields like max door weight)
-    1 dot  = low weight (spec detail fields like finish, hold open)
-    Filled dots (.pip.on) use the primary text color.
-    */
     .wt-pip { display:inline-flex; gap:2px; }
     .pip    { width:6px; height:6px; border-radius:50%; background:var(--bdr2); }
     .pip.on { background:var(--txt); }
 
-    /*
-    ── VARIANT DRAWER
-    Collapsible section at the bottom of each comparable card.
-    Shows all available SKU variants (finishes, options).
-    Exclusive variants are highlighted in purple.
-    Toggle state is managed by the variantOpen{} object in JavaScript.
-    */
     .variants-section { margin-top:.75rem; border-top:0.5px solid var(--bdr); padding-top:.75rem; }
-    .variants-toggle  {
-      font-size:12px; color:var(--txt2); background:none; border:none;
-      cursor:pointer; padding:0; font-family:var(--font);
-      display:flex; align-items:center; gap:4px;
-    }
+    .variants-toggle  { font-size:12px; color:var(--txt2); background:none; border:none; cursor:pointer; padding:0; font-family:var(--font); }
     .variants-toggle:hover { color:var(--txt); }
     .variants-body      { margin-top:.6rem; display:none; }
     .variants-body.open { display:block; }
-    .variant-chip {
-      display:inline-flex; align-items:center; gap:5px;
-      font-size:11px; background:var(--bg2);
-      border:0.5px solid var(--bdr); border-radius:4px;
-      padding:3px 8px; margin:3px 3px 3px 0; color:var(--txt2);
-    }
-    .variant-chip.excl {
-      /* Exclusive variants get purple styling to stand out */
-      background:var(--bgprop); border-color:var(--txtprop);
-      color:var(--txtprop); font-weight:500;
-    }
+    .variant-chip { display:inline-flex; align-items:center; gap:5px; font-size:11px; background:var(--bg2); border:0.5px solid var(--bdr); border-radius:4px; padding:3px 8px; margin:3px 3px 3px 0; color:var(--txt2); }
+    .variant-chip.excl { background:var(--bgprop); border-color:var(--txtprop); color:var(--txtprop); font-weight:500; }
 
-    /*
-    ── TOOLTIP (Selected Product info icon)
-    The "i" button next to "Selected product" column header in the
-    diff table. Hovering reveals the full name and model number of
-    the product the user chose in Step 1, as a reminder.
-    Uses CSS hover — no JavaScript needed.
-    position:relative on .iw creates the coordinate context for
-    the absolutely positioned .tip.
-    */
-    .iw   { position:relative; display:inline-flex; align-items:center; gap:4px; }
-    .iico {
-      width:14px; height:14px; border-radius:50%;
-      border:0.5px solid var(--bdr2);
-      display:inline-flex; align-items:center; justify-content:center;
-      font-size:10px; color:var(--txt2); cursor:default;
-    }
-    .tip {
-      display:none;
-      position:absolute; top:calc(100% + 6px); right:0;
-      background:var(--bg); border:0.5px solid var(--bdr2);
-      border-radius:var(--r-md); padding:8px 10px;
-      min-width:200px; z-index:50; font-size:12px;
-      box-shadow:0 4px 16px rgba(0,0,0,.12);
-    }
+    .selected-bar { background:var(--bg); border:1.5px solid var(--bdr2); border-radius:var(--r-lg); padding:12px 16px; margin-bottom:1.25rem; display:flex; align-items:center; justify-content:space-between; gap:16px; }
+    .selected-bar-left { display:flex; align-items:center; gap:12px; min-width:0; }
+    .selected-bar-label { font-size:10px; font-weight:500; text-transform:uppercase; letter-spacing:.06em; color:var(--txt3); margin-bottom:2px; }
+    .selected-bar-name  { font-size:13px; font-weight:500; color:var(--txt); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .iico { width:14px; height:14px; border-radius:50%; border:0.5px solid var(--bdr2); display:inline-flex; align-items:center; justify-content:center; font-size:10px; color:var(--txt2); cursor:default; }
+    .tip { display:none; position:absolute; top:calc(100% + 6px); right:0; background:var(--bg); border:0.5px solid var(--bdr2); border-radius:var(--r-md); padding:8px 10px; min-width:200px; z-index:50; font-size:12px; box-shadow:0 4px 16px rgba(0,0,0,.12); }
     .tip .tn { font-weight:500; margin-bottom:2px; color:var(--txt); }
     .tip .ts { font-family:var(--mono); font-size:11px; color:var(--txt2); }
     .iw:hover .tip { display:block; }
 
-    /* ── CHANGE PRODUCT BUTTON — underlined text link back to Step 1 */
-    .change-btn {
-      font-size:12px; color:var(--txt2); background:none; border:none;
-      cursor:pointer; padding:0; text-decoration:underline;
-      text-underline-offset:2px; font-family:var(--font);
-    }
-    .change-btn:hover { color:var(--txt); }
-
-    /* ── EMPTY STATE — shown when search returns no results */
+    .change-btn { font-size:13px; font-weight:500; color:var(--txt); background:var(--bg); border:1.5px solid var(--bdr2); border-radius:var(--r-md); padding:7px 16px; cursor:pointer; font-family:var(--font); display:inline-flex; align-items:center; gap:6px; transition:background .15s, border-color .15s, box-shadow .15s; }
+    .change-btn:hover { background:var(--bg2); border-color:var(--bdr3); box-shadow:0 1px 4px rgba(0,0,0,.08); }
     .empty { text-align:center; padding:3rem 1rem; color:var(--txt2); font-size:14px; }
-
-    /* ── FOOTER */
-    footer {
-      text-align:center; font-size:12px; color:var(--txt3);
-      padding:2rem; border-top:0.5px solid var(--bdr); margin-top:2rem;
-    }
+    footer { text-align:center; font-size:12px; color:var(--txt3); padding:2rem; border-top:0.5px solid var(--bdr); margin-top:2rem; }
   </style>
 </head>
 <body>
 
-<!--
-  HEADER
-  ------
-  Sticky top bar. The h-tag "Prototype" badge is a reminder that
-  this is not a production site. Remove or update when publishing.
--->
 <header>
   <div class="h-brand">
     <span class="h-name">DHXR</span>
     <span class="h-full">Door Hardware Cross Reference</span>
   </div>
-  <span class="h-tag">Prototype · v0.2</span>
+  <span class="h-tag">Prototype · v0.3</span>
 </header>
 
 <main>
-  <!--
-    PAGE INTRO
-    ----------
-    Brief description of what the tool does.
-    Keep this short — users arriving here likely already know
-    what they're looking for.
-  -->
   <div class="page-intro">
     <h1>Product cross-reference</h1>
     <p>Search by part number, model, brand, or specification to find and compare equivalent products across brands.</p>
   </div>
 
-  <!--
-    STEP INDICATOR BAR
-    ------------------
-    Visual progress indicator. JavaScript updates the class on
-    each .step element (active / done) as the user moves through
-    the flow. See selectProduct() and goBack() in the script.
-  -->
   <div class="step-bar">
     <div class="step active" id="s1"><div class="step-num">1</div>Search &amp; select your product</div>
     <div class="step-div"></div>
     <div class="step" id="s2"><div class="step-num">2</div>Review comparables</div>
   </div>
 
-  <!--
-    STEP 1 — SEARCH & SELECT
-    -------------------------
-    This entire div is hidden when the user selects a product
-    (Step 2 becomes visible). The goBack() function reverses this.
-  -->
   <div id="step1">
-
-    <!--
-      CATEGORY FILTER BUTTONS
-      -----------------------
-      Each button calls setCat() with a category string.
-      setCat() updates the active class and filters the search pool.
-      Adding a new product category requires:
-        1. A new button here
-        2. A new entry in the HINTS object in the script
-        3. A new weight table in the script
-        4. Updates to calcScore() to handle the new category
-    -->
     <div class="cat-row">
       <button class="cat-btn active" id="cat-all" onclick="setCat('all')">
-        <div class="cat-name">All products</div>
-        <div class="cat-sub">Cylinders &amp; closers</div>
+        <div class="cat-name">All products</div><div class="cat-sub">Cylinders, closers, smart locks &amp; thresholds</div>
       </button>
       <button class="cat-btn" id="cat-cyl" onclick="setCat('cylinder')">
-        <div class="cat-name">Cylinders &amp; cores</div>
-        <div class="cat-sub">Mortise, IC, SFIC</div>
+        <div class="cat-name">Cylinders &amp; cores</div><div class="cat-sub">Mortise, IC, SFIC</div>
       </button>
       <button class="cat-btn" id="cat-cls" onclick="setCat('closer')">
-        <div class="cat-name">Door closers</div>
-        <div class="cat-sub">Surface mounted</div>
+        <div class="cat-name">Door closers</div><div class="cat-sub">Surface mounted</div>
+      </button>
+      <button class="cat-btn" id="cat-slk" onclick="setCat('smartlock')">
+        <div class="cat-name">Smart locks</div><div class="cat-sub">WiFi, Z-Wave, keypad</div>
+      </button>
+      <button class="cat-btn" id="cat-thr" onclick="setCat('threshold')">
+        <div class="cat-name">Thresholds</div><div class="cat-sub">Commercial saddle, heavy duty</div>
       </button>
     </div>
-
-    <!--
-      SEARCH INPUT
-      ------------
-      The input fires doSearch() on button click or Enter key.
-      The Enter key listener is set up at the bottom of the script.
-      id="qi" is referenced by document.getElementById("qi") in JS.
-    -->
     <div class="search-row">
-      <input type="text" id="qi" placeholder="Enter part number, model, brand, keyway, mounting type…" />
+      <input type="text" id="qi" placeholder="Model number, brand, width, ADA, fire rated, thermal break…" />
       <button onclick="doSearch()">Search</button>
     </div>
-
-    <!--
-      HINT TEXT
-      ---------
-      Example search terms. Updated dynamically by setCat() when
-      the user switches category filter. id="hintText" is targeted
-      by innerHTML in setCat().
-    -->
     <p class="hint" id="hintText">
-      Try: <code>Norton</code> &nbsp;·&nbsp; <code>4040XP</code> &nbsp;·&nbsp;
-      <code>Primus</code> &nbsp;·&nbsp; <code>parallel arm</code> &nbsp;·&nbsp;
-      <code>626</code> &nbsp;·&nbsp; <code>SFIC</code>
+      Try: <code>Encode Plus</code> &nbsp;·&nbsp; <code>Yale Pro</code> &nbsp;·&nbsp; <code>WiFi</code> &nbsp;·&nbsp;
+      <code>Z-Wave</code> &nbsp;·&nbsp; <code>413</code> &nbsp;·&nbsp; <code>ADA</code> &nbsp;·&nbsp; <code>saddle</code> &nbsp;·&nbsp; <code>Norton</code>
     </p>
-
-    <!--
-      SEARCH RESULTS CONTAINER
-      ------------------------
-      Empty on page load. doSearch() fills this with result rows.
-      Each row is a clickable div that calls selectProduct(id).
-    -->
     <div id="searchResults"></div>
+  </div>
 
-  </div><!-- end #step1 -->
-
-  <!--
-    STEP 2 — COMPARABLE PRODUCTS
-    -----------------------------
-    Hidden by default (display:none). Shown when a product is
-    selected. renderComparables() fills #compResults with
-    comparison cards.
-  -->
   <div id="step2" style="display:none">
     <div id="compResults"></div>
   </div>
-
 </main>
 
-<footer>DHXR · Door Hardware Cross Reference &nbsp;·&nbsp; Prototype v0.2 &nbsp;·&nbsp; Data pending SME validation</footer>
-
+<footer>DHXR · Door Hardware Cross Reference &nbsp;·&nbsp; Prototype v0.4 &nbsp;·&nbsp; Data pending SME validation</footer>
 
 <script>
 /*
 ============================================================
-DHXR — APPLICATION SCRIPT
-============================================================
-
-SECTION INDEX
--------------
-  A. Scoring weight tables
-  B. Product database (PARENTS array)
-  C. Lookup index
-  D. Application state
-  E. Hint text by category
-  F. Utility / helper functions
-  G. Search logic
-  H. Product selection
-  I. Comparison rendering
-  J. Variant drawer toggle
-  K. Navigation (back button, category filter)
-  L. Keyboard listener (Enter key)
+DHXR v0.4 — Added threshold category (NGP + Pemko)
+Weight tables are draft — pending SME validation
 ============================================================
 */
 
-
-/* ============================================================
-   A. SCORING WEIGHT TABLES
-   ------------------------------------------------------------
-   These tables define how important each field is when
-   calculating the weighted match score between two products.
-
-   HOW SCORING WORKS:
-   - Each field is assigned a point value (its "weight")
-   - When comparing two products, if a field value matches,
-     the comparable earns those points. If not, it earns zero.
-   - Total earned points / total possible points = percentage
-   - Percentage maps to confidence: ≥90% High, 70–89% Partial, <70% Incompatible
-
-   FIELD TIERS (used for the tier breakdown cards in the UI):
-   - Tier 1 (Functional core): Does this product do the same job?
-   - Tier 2 (Performance):     Can it handle the same door/application?
-   - Tier 3 (Installation):    Is it physically compatible with existing prep?
-   - Tier 4 (Specification):   Cosmetic or minor — finish, hold open, etc.
-
-   TUNING WEIGHTS:
-   Changing a number here cascades through every comparison.
-   Consult the SME before changing weights on live data.
-   Higher number = more impact on final score.
-   ============================================================ */
-
-// CW = Cylinder Weights
+// ── A. WEIGHT TABLES ──────────────────────────────────────
 const CW = {
-  // Tier 1 — Functional core (highest impact)
-  "Type":        30,   // Mortise, IC, SFIC — must match for any comparison to be valid
-  "Grade":       25,   // ANSI Grade 1/2/3 — standardized across brands
-  "Key control": 20,   // Standard / Restricted / High Security
-  "IC format":   20,   // Best SFIC vs Schlage FSIC — physical incompatibility if mismatched
-  // Tier 2 — Performance
-  "Pins":        10,   // 5, 6, or 7 pin
-  "Keyway":       8,   // Proprietary per brand — almost always different, lowers score
-  // Tier 4 — Specification detail (low impact)
-  "Finish":       4,   // ANSI finish code — cosmetic, does not affect function
-  "Keying":       3,   // KD, MK, GMK etc — available on most products
+  "Type":30,"Grade":25,"Key control":20,"IC format":20,
+  "Pins":10,"Keyway":8,
+  "Finish":4,"Keying":3
 };
-
-// LW = Closer Weights
 const LW = {
-  // Tier 1 — Functional core (highest impact)
-  "ANSI size":      35,  // Power rating 1–6 — most critical field for closers
-  "Mounting":       25,  // Regular arm, parallel arm, top jamb — determines door compatibility
-  "Arm type":       20,  // Regular vs parallel — must match mounting type
-  "Fire rated":     15,  // UL10C etc — non-negotiable on fire-rated openings
-  // Tier 2 — Performance envelope
-  "Max door (lbs)": 12,  // Weight capacity — numeric comparison, flags shortfalls in red
-  "Max width (in)": 12,  // Width capacity — same
-  "Delayed":         8,  // Delayed action — common healthcare/education requirement
-  "Backcheck":       8,  // Backcheck — common on high-traffic doors
-  // Tier 3 — Installation
-  "Template":        6,  // Mounting template — brand-proprietary, adapter plates needed
-  // Tier 4 — Specification detail
-  "Finish":          4,  // ANSI finish — cosmetic
-  "Hold open":       3,  // Hold open — not available on fire-rated doors
-  "Size range":      3,  // Adjustable range — most are 1–6 adjustable
+  "ANSI size":35,"Mounting":25,"Arm type":20,"Fire rated":15,
+  "Max door (lbs)":12,"Max width (in)":12,"Delayed":8,"Backcheck":8,
+  "Template":6,
+  "Finish":4,"Hold open":3,"Size range":3
+};
+// Smart lock weights — DRAFT, pending SME validation
+const SW = {
+  "Lock type":30,"Connectivity":30,"Hub required":25,
+  "Smart home platforms":0,"Protocol":0,
+  "ANSI grade":15,"Max codes":10,"Key backup":10,
+  "Built-in alarm":0,"Auto-lock":0,"Activity log":5,
+  "Fire rating":0,
+  "Handing":10,
+  "Power source":0
+};
+// Threshold weights — DRAFT, pending SME validation
+const TW = {
+  "Profile type":35,"Width":30,"Height":25,"Material":20,"ADA compliant":25,
+  "Fire rated":20,
+  "Thermal break":15,"Seal type":10,
+  "Slip resistant":0,"Wall thickness":0,
+  "Finish":0,"Alloy":0
 };
 
+// ── B. PRODUCT DATABASE ───────────────────────────────────
 
-/* ============================================================
-   B. PRODUCT DATABASE — PARENTS ARRAY
-   ------------------------------------------------------------
-   Each object in this array represents one "parent" product —
-   a base product family without finish/option variants.
+const CYLINDERS = [
+  {id:"c0",cat:"cylinder",brand:"ASSA ABLOY (Corbin Russwin)",bs:"Corbin Russwin",line:"ML2000 Series",model:"1000-118-A01",name:"Standard Mortise Cylinder – L4 Keyway",
+   fields:{Type:"Mortise","Key control":"Standard",Grade:"ANSI Grade 1",Pins:"6",Keyway:"Corbin L4","IC format":"N/A",Finish:"605–630 range",Keying:"KD, KA, MK, GMK"},
+   xref:["c5"],caution:null,proprietary:["Corbin L4 keyway — brand-proprietary"],exclusive:["612 – Satin Bronze","613 – Oil Rubbed Bronze"],
+   variants:[{sku:"x L4 x 626",finish:"626 – Satin Chrome",excl:false},{sku:"x L4 x 612",finish:"612 – Satin Bronze",excl:true},{sku:"x L4 x 613",finish:"613 – Oil Rubbed Bronze",excl:true}]},
+  {id:"c1",cat:"cylinder",brand:"ASSA ABLOY (Corbin Russwin)",bs:"Corbin Russwin",line:"ML2000HS",model:"Pyramid-ML2000HS",name:"Pyramid High Security Mortise Cylinder",
+   fields:{Type:"Mortise","Key control":"High Security",Grade:"ANSI Grade 1",Pins:"6",Keyway:"Corbin L4 (Pyramid)","IC format":"N/A",Finish:"626, 629, 630",Keying:"KD, MK, GMK"},
+   xref:["c6"],caution:null,proprietary:["Pyramid sidebar — patented","Corbin L4 (Pyramid) keyway — restricted"],exclusive:[],
+   variants:[{sku:"Pyramid x L4 x 626",finish:"626 – Satin Chrome",excl:false}]},
+  {id:"c2",cat:"cylinder",brand:"ASSA ABLOY (Corbin Russwin)",bs:"Corbin Russwin",line:"ML2000 Series",model:"SFIC-ML2000",name:"Small Format IC Housing – Mortise",
+   fields:{Type:"Mortise","Key control":"Restricted",Grade:"ANSI Grade 1",Pins:"7",Keyway:"SFIC (Best/ASSA)","IC format":"Best SFIC",Finish:"606, 626",Keying:"KD, MK, GMK, GGMK"},
+   xref:["c7"],caution:"IC core formats are physically incompatible — Best SFIC cores cannot be used in Schlage FSIC housings.",
+   proprietary:["Best SFIC format — not compatible with Schlage FSIC"],exclusive:[],
+   variants:[{sku:"SFIC x ML2000 x 626",finish:"626 – Satin Chrome",excl:false}]},
+  {id:"c5",cat:"cylinder",brand:"Schlage (Allegion)",bs:"Schlage",line:"L Series (L9000)",model:"20-001",name:"Conventional Mortise Cylinder – Everest C123",
+   fields:{Type:"Mortise","Key control":"Standard",Grade:"ANSI Grade 1",Pins:"6",Keyway:"Schlage Everest C123","IC format":"N/A",Finish:"605–643E range",Keying:"KD, KA, MK, GMK"},
+   xref:["c0"],caution:null,proprietary:["Schlage Everest C123 keyway — patented"],exclusive:["643E – Aged Bronze"],
+   variants:[{sku:"20-001 C123 626",finish:"626 – Satin Chrome",excl:false},{sku:"20-001 C123 643E",finish:"643E – Aged Bronze",excl:true}]},
+  {id:"c6",cat:"cylinder",brand:"Schlage (Allegion)",bs:"Schlage",line:"L Series – Primus",model:"20-700-EP",name:"Primus High Security Mortise Cylinder – EP Keyway",
+   fields:{Type:"Mortise","Key control":"High Security",Grade:"ANSI Grade 1",Pins:"6",Keyway:"Schlage Primus (EP)","IC format":"N/A",Finish:"605–626 range",Keying:"KD, MK, GMK"},
+   xref:["c1"],caution:null,proprietary:["Primus sidebar — patented","Schlage Primus EP keyway — geographically restricted"],exclusive:[],
+   variants:[{sku:"20-700 EP 626",finish:"626 – Satin Chrome",excl:false}]},
+  {id:"c7",cat:"cylinder",brand:"Schlage (Allegion)",bs:"Schlage",line:"L Series – FSIC",model:"FSIC-L9000",name:"Full Size IC Housing – Mortise",
+   fields:{Type:"Mortise","Key control":"Restricted",Grade:"ANSI Grade 1",Pins:"6",Keyway:"Schlage FSIC","IC format":"Schlage FSIC",Finish:"606, 626",Keying:"KD, MK, GMK, GGMK"},
+   xref:["c2"],caution:"Schlage FSIC and Best SFIC are different IC standards — cores do not interchange.",
+   proprietary:["Schlage FSIC — not compatible with Best SFIC"],exclusive:[],
+   variants:[{sku:"FSIC-L9000 x 626",finish:"626 – Satin Chrome",excl:false}]},
+];
 
-   STRUCTURE OF EACH PRODUCT OBJECT:
-   {
-     id:          Unique identifier. Format: CAT-BRAND-NUM
-                  (CYL = cylinder, CLO = closer, CR = Corbin Russwin,
-                   SCH = Schlage, NOR = Norton, LCN = LCN, DK = dormakaba)
+const CLOSERS = [
+  {id:"l0",cat:"closer",brand:"ASSA ABLOY (Norton/Rixon)",bs:"Norton/Rixon",line:"7500 Series",model:"7500",name:"7500 Regular Arm Closer",
+   fields:{"ANSI size":"3",Mounting:"Regular arm","Arm type":"Regular","Fire rated":"Yes – UL10C","Max door (lbs)":"125","Max width (in)":"44",Delayed:"Available",Backcheck:"Available",Template:"Norton 7500 template",Finish:"689 – Aluminum","Hold open":"No","Size range":"1–6 adjustable"},
+   xref:["l4","l7"],caution:null,proprietary:["Norton 7500 mounting template"],exclusive:[],
+   variants:[{sku:"7500-3 x 689",finish:"689 – Aluminum",excl:false},{sku:"7500-3 x 693",finish:"693 – Dark Bronze",excl:false}]},
+  {id:"l2",cat:"closer",brand:"ASSA ABLOY (Norton/Rixon)",bs:"Norton/Rixon",line:"7500 Series",model:"7500-PA",name:"7500 Parallel Arm Closer",
+   fields:{"ANSI size":"3",Mounting:"Parallel arm","Arm type":"Parallel","Fire rated":"Yes – UL10C","Max door (lbs)":"125","Max width (in)":"44",Delayed:"Available",Backcheck:"Available",Template:"Norton 7500 template",Finish:"689 – Aluminum","Hold open":"No","Size range":"1–6 adjustable"},
+   xref:["l6","l9"],caution:null,proprietary:["Norton 7500 mounting template"],exclusive:[],
+   variants:[{sku:"7500-PA-3 x 689",finish:"689 – Aluminum",excl:false}]},
+  {id:"l4",cat:"closer",brand:"Allegion (LCN)",bs:"LCN",line:"4040XP Series",model:"4040XP",name:"4040XP Regular Arm Closer",
+   fields:{"ANSI size":"3",Mounting:"Regular arm","Arm type":"Regular","Fire rated":"Yes – UL10C","Max door (lbs)":"125","Max width (in)":"44",Delayed:"Available",Backcheck:"Available",Template:"LCN 4040XP template",Finish:"689 – Aluminum","Hold open":"No","Size range":"1–6 adjustable"},
+   xref:["l0","l7"],caution:"Mounting templates differ — adapter plates required for retrofit.",
+   proprietary:["LCN 4040XP mounting template"],exclusive:["696 – Satin Chrome","SCUSH (Cushion Stop)"],
+   variants:[{sku:"4040XP x 689",finish:"689 – Aluminum",excl:false},{sku:"4040XP x 696",finish:"696 – Satin Chrome",excl:true},{sku:"4040XP-SCUSH",finish:"689 – Aluminum",excl:true,note:"Cushion stop — no Norton/dormakaba equivalent"}]},
+  {id:"l6",cat:"closer",brand:"Allegion (LCN)",bs:"LCN",line:"4040XP Series",model:"4040XP-PA",name:"4040XP Parallel Arm Closer",
+   fields:{"ANSI size":"3",Mounting:"Parallel arm","Arm type":"Parallel","Fire rated":"Yes – UL10C","Max door (lbs)":"125","Max width (in)":"44",Delayed:"Available",Backcheck:"Available",Template:"LCN 4040XP template",Finish:"689 – Aluminum","Hold open":"No","Size range":"1–6 adjustable"},
+   xref:["l2","l9"],caution:"Mounting templates differ — adapter plates required.",
+   proprietary:["LCN 4040XP mounting template"],exclusive:[],
+   variants:[{sku:"4040XP-PA x 689",finish:"689 – Aluminum",excl:false}]},
+  {id:"l7",cat:"closer",brand:"dormakaba",bs:"dormakaba",line:"RTS73 Series",model:"RTS73",name:"RTS73 Regular Arm Closer",
+   fields:{"ANSI size":"3",Mounting:"Regular arm","Arm type":"Regular","Fire rated":"Yes – UL10C","Max door (lbs)":"120","Max width (in)":"42",Delayed:"Available",Backcheck:"Available",Template:"dormakaba RTS73 template",Finish:"689 – Aluminum","Hold open":"No","Size range":"1–6 adjustable"},
+   xref:["l0","l4"],caution:"Max door weight (120 lbs) and width (42\") are lower than Norton/LCN. Verify door spec.",
+   proprietary:["dormakaba RTS73 mounting template"],exclusive:[],
+   variants:[{sku:"RTS73 x 689",finish:"689 – Aluminum",excl:false}]},
+  {id:"l9",cat:"closer",brand:"dormakaba",bs:"dormakaba",line:"RTS73 Series",model:"RTS73-PA",name:"RTS73 Parallel Arm Closer",
+   fields:{"ANSI size":"3",Mounting:"Parallel arm","Arm type":"Parallel","Fire rated":"Yes – UL10C","Max door (lbs)":"120","Max width (in)":"42",Delayed:"Available",Backcheck:"Available",Template:"dormakaba RTS73 template",Finish:"689 – Aluminum","Hold open":"No","Size range":"1–6 adjustable"},
+   xref:["l2","l6"],caution:"Max door specs lower than Norton/LCN. Verify before substituting.",
+   proprietary:["dormakaba RTS73 mounting template"],exclusive:[],
+   variants:[{sku:"RTS73-PA x 689",finish:"689 – Aluminum",excl:false}]},
+];
 
-     cat:         Product category. Currently: "cylinder" or "closer"
-                  Used by pool() to filter by category button.
+const SMARTLOCKS = [
+  // ── SCHLAGE ──────────────────────────────────────────────
+  {id:"s1",cat:"smartlock",brand:"Schlage (Allegion)",bs:"Schlage",line:"Encode Plus",model:"BE499",name:"Encode Plus Smart WiFi Deadbolt",
+   fields:{"Lock type":"Deadbolt",Connectivity:"WiFi (built-in)","Hub required":"No","Smart home platforms":"Apple HomeKit, Apple Home Keys, Alexa, Google Home",Protocol:"WiFi 2.4GHz","ANSI grade":"Grade 1","Max codes":"100","Key backup":"No","Built-in alarm":"Yes","Auto-lock":"Yes","Activity log":"Yes","Fire rating":"No",Handing:"Universal","Power source":"4x AA"},
+   xref:["s5","s11","s12"],caution:"Apple Home Key (NFC tap) is exclusive to Schlage — no Yale equivalent.",
+   proprietary:["Apple Home Key NFC tap — Apple ecosystem exclusive","Snap & Stay™ installation"],exclusive:["Apple Home Key tap-to-unlock"],
+   variants:[{sku:"BE499 CAM 619",finish:"619 – Satin Nickel",excl:false},{sku:"BE499 CAM 622",finish:"622 – Matte Black",excl:false},{sku:"BE499 CEN 626",finish:"626 – Satin Chrome",excl:false}]},
 
-     brand:       Full brand name including parent company.
-     bs:          Short brand name shown in badges (fits in small space).
-     line:        Product line / series name.
-     model:       Base model number (no variant suffixes).
-     name:        Human-readable product name shown in the UI.
+  {id:"s2",cat:"smartlock",brand:"Schlage (Allegion)",bs:"Schlage",line:"Encode",model:"BE489",name:"Encode Smart WiFi Deadbolt",
+   fields:{"Lock type":"Deadbolt",Connectivity:"WiFi (built-in)","Hub required":"No","Smart home platforms":"Alexa, Google Home",Protocol:"WiFi 2.4GHz","ANSI grade":"Grade 1","Max codes":"100","Key backup":"No","Built-in alarm":"Yes","Auto-lock":"Yes","Activity log":"Yes","Fire rating":"No",Handing:"Universal","Power source":"4x AA"},
+   xref:["s5","s11","s12"],caution:"No Apple HomeKit. Yale Access app vs Schlage Home app — different ecosystems.",
+   proprietary:["Snap & Stay™ installation"],exclusive:[],
+   variants:[{sku:"BE489 CAM 619",finish:"619 – Satin Nickel",excl:false},{sku:"BE489 GRW 608",finish:"608 – Satin Brass",excl:false},{sku:"BE489 CEN 622",finish:"622 – Matte Black",excl:false}]},
 
-     fields:      Object of key-value pairs used for matching.
-                  Keys must correspond to entries in CW or LW above.
-                  These are the fields that appear in the diff table.
+  {id:"s3",cat:"smartlock",brand:"Schlage (Allegion)",bs:"Schlage",line:"Connect",model:"BE469ZP",name:"Connect Smart Deadbolt with Alarm – Z-Wave Plus",
+   fields:{"Lock type":"Deadbolt",Connectivity:"Z-Wave Plus","Hub required":"Yes","Smart home platforms":"SmartThings, Ring Alarm, Alarm.com, Wink",Protocol:"Z-Wave Plus","ANSI grade":"Grade 1","Max codes":"30","Key backup":"No","Built-in alarm":"Yes","Auto-lock":"Yes","Activity log":"Yes","Fire rating":"No",Handing:"Universal","Power source":"4x AA"},
+   xref:["s6","s8","s10","s13","s14"],caution:"Hub required. Only 30 access codes vs Yale's 250. No key backup unlike Yale Pro 2.",
+   proprietary:["Resistive touchscreen (wear-pattern resistant)","Snap & Stay™"],exclusive:["Built-in alarm (BE469 model)"],
+   variants:[{sku:"BE469ZP CAM 619",finish:"619 – Satin Nickel",excl:false},{sku:"BE469ZP CEN 622",finish:"622 – Matte Black",excl:false}]},
 
-     xref:        Array of parent IDs that are known cross-references.
-                  These are the products that appear as comparables
-                  when this product is selected. Must match valid IDs.
+  {id:"s4",cat:"smartlock",brand:"Schlage (Allegion)",bs:"Schlage",line:"Keypad",model:"BE365",name:"Keypad Deadbolt",
+   fields:{"Lock type":"Deadbolt",Connectivity:"None (standalone)","Hub required":"No","Smart home platforms":"None",Protocol:"None","ANSI grade":"Grade 2","Max codes":"19","Key backup":"Yes","Built-in alarm":"No","Auto-lock":"No","Activity log":"No","Fire rating":"Optional (UL)",Handing:"Universal","Power source":"4x AA"},
+   xref:["s7","s9"],caution:"Standalone only — no app or remote access. Yale Pro 2 BLE has Bluetooth at similar price point.",
+   proprietary:["Silicone-coated keypad (numbers won't wear off)"],exclusive:["530 – Black Stainless (Electronics only)"],
+   variants:[{sku:"BE365 CAM 619",finish:"619 – Satin Nickel",excl:false},{sku:"BE365 PLY 622",finish:"622 – Matte Black",excl:false},{sku:"BE365 CAM 530",finish:"530 – Black Stainless",excl:true}]},
 
-     caution:     String shown in the amber caution box, or null.
-                  Use for important practical caveats (e.g. template
-                  difference, door spec gap). Shown even on Partial.
+  // ── YALE (ASSA ABLOY) ────────────────────────────────────
+  {id:"s5",cat:"smartlock",brand:"ASSA ABLOY (Yale)",bs:"Yale",line:"Yale Pro 2",model:"YRD624-WF1",name:"Yale Pro 2 Touchscreen Deadbolt — WiFi",
+   fields:{"Lock type":"Deadbolt",Connectivity:"WiFi (module)","Hub required":"No","Smart home platforms":"Alexa, Google Home, Apple HomeKit",Protocol:"WiFi 2.4GHz","ANSI grade":"Grade 2","Max codes":"250","Key backup":"Yes","Built-in alarm":"No","Auto-lock":"Yes","Activity log":"Yes","Fire rating":"Yes – 90 min UL",Handing:"Universal","Power source":"4x AA + 9V backup"},
+   xref:["s1","s2"],caution:"Grade 2 vs Schlage Encode Grade 1. No built-in alarm. Module-based WiFi vs Schlage built-in. Yale Access app vs Schlage Home.",
+   proprietary:["Modular technology — upgradeable from BLE to ZW2 or WF1","Yale Access app with Auto-Unlock"],exclusive:["BSP – Black Suede","P05 – Lifetime Brass","10BP – Oil Rubbed Bronze","250 access codes","Key backup on WiFi tier","90-min fire rating"],
+   variants:[{sku:"YRD624-WF1-619",finish:"619 – Satin Nickel",excl:false},{sku:"YRD624-WF1-BSP",finish:"BSP – Black Suede",excl:true},{sku:"YRD624-WF1-P05",finish:"P05 – Lifetime Brass",excl:true}]},
 
-     proprietary: Array of strings describing brand-proprietary features.
-                  Each string becomes a bullet in the purple proprietary row.
-                  Use for keyways, IC formats, mounting templates, patented
-                  mechanisms — anything that limits interchangeability.
+  {id:"s6",cat:"smartlock",brand:"ASSA ABLOY (Yale)",bs:"Yale",line:"Yale Pro 2",model:"YRD624-ZW2",name:"Yale Pro 2 Touchscreen Deadbolt — Z-Wave Plus",
+   fields:{"Lock type":"Deadbolt",Connectivity:"Z-Wave Plus","Hub required":"Yes","Smart home platforms":"SmartThings, Ring Alarm, Alarm.com",Protocol:"Z-Wave Plus","ANSI grade":"Grade 2","Max codes":"250","Key backup":"Yes","Built-in alarm":"No","Auto-lock":"Yes","Activity log":"Yes","Fire rating":"Yes – 90 min UL",Handing:"Universal","Power source":"4x AA + 9V backup"},
+   xref:["s3"],caution:"Grade 2 vs Schlage Connect Grade 1. No built-in alarm. 250 codes vs Schlage's 30. Key backup available. 90-min fire rating.",
+   proprietary:["Modular technology — upgradeable from BLE","Yale Access app"],exclusive:["BSP – Black Suede","P05 – Lifetime Brass","250 access codes vs 30","Key backup option","90-min fire rating"],
+   variants:[{sku:"YRD624-ZW2-619",finish:"619 – Satin Nickel",excl:false},{sku:"YRD624-ZW2-BSP",finish:"BSP – Black Suede",excl:true},{sku:"YRD624-ZW2-P05",finish:"P05 – Lifetime Brass",excl:true}]},
 
-     exclusive:   Array of strings listing finishes or options that are
-                  NOT available from the cross-referenced brand(s).
-                  Shown as a selling point in the purple exclusive row.
+  {id:"s7",cat:"smartlock",brand:"ASSA ABLOY (Yale)",bs:"Yale",line:"Yale Pro 2",model:"YRD614-BLE",name:"Yale Pro 2 Keypad Deadbolt — Standalone BLE",
+   fields:{"Lock type":"Deadbolt",Connectivity:"Bluetooth (BLE)","Hub required":"No","Smart home platforms":"None (BLE range only — no remote)",Protocol:"Bluetooth Low Energy","ANSI grade":"Grade 2","Max codes":"250","Key backup":"Yes","Built-in alarm":"No","Auto-lock":"Yes","Activity log":"Yes (local)","Fire rating":"Yes – 90 min UL",Handing:"Universal","Power source":"4x AA + 9V backup"},
+   xref:["s4"],caution:"BLE only = no remote access without WiFi module upgrade ($188). Comparable to Schlage BE365 at standalone tier.",
+   proprietary:["Modular — upgradeable to ZW2 ($235) or WF1 ($188)","Yale Access app (at-door Bluetooth)","Auto-Unlock (BLE)"],exclusive:["BSP – Black Suede","P05 – Lifetime Brass","250 codes vs 19","Key backup","90-min fire rating","Bluetooth app access"],
+   variants:[{sku:"YRD614-BLE-619",finish:"619 – Satin Nickel",excl:false},{sku:"YRD614-BLE-BSP",finish:"BSP – Black Suede",excl:true}]},
 
-     variants:    Array of variant objects representing individual SKUs.
-                  Each variant has: { sku, finish, excl, note? }
-                  excl:true highlights the variant as brand-exclusive.
-                  Shown in the collapsible variant drawer.
-   }
+  {id:"s8",cat:"smartlock",brand:"ASSA ABLOY (Yale)",bs:"Yale",line:"Yale Pro SL",model:"YRD136/156-ZW2",name:"Yale Pro SL Key-Free Deadbolt — Z-Wave Plus",
+   fields:{"Lock type":"Deadbolt",Connectivity:"Z-Wave Plus","Hub required":"Yes","Smart home platforms":"SmartThings, Ring Alarm, Z-Wave hubs",Protocol:"Z-Wave Plus","ANSI grade":"Grade 2","Max codes":"250","Key backup":"No — key free only","Built-in alarm":"No","Auto-lock":"Yes","Activity log":"Yes","Fire rating":"No",Handing:"Universal","Power source":"4x AA + 9V backup"},
+   xref:["s3"],caution:"Key-free only — no cylinder at all. Slim profile design. Grade 2 vs Schlage Connect Grade 1.",
+   proprietary:["Slim profile — no keyhole, cannot be picked or bumped"],exclusive:["BSP – Black Suede","P05 – Lifetime Brass","250 codes","Slim keyhole-free design"],
+   variants:[{sku:"YRD136-ZW2-619",finish:"619 – Satin Nickel",excl:false},{sku:"YRD156-ZW2-BSP",finish:"BSP – Black Suede",excl:true}]},
 
-   ADDING A NEW PRODUCT:
-   1. Copy an existing object of the same category
-   2. Assign a new unique id following the naming convention
-   3. Fill in all fields, xref, caution, proprietary, exclusive, variants
-   4. Add this product's id to the xref array of its cross-references
-   5. Verify the fields keys match the weight table (CW or LW)
-   ============================================================ */
+  {id:"s9",cat:"smartlock",brand:"ASSA ABLOY (Yale)",bs:"Yale",line:"Yale Pro 2",model:"YRD634-BLE",name:"Yale Pro 2 Key-Free Keypad Deadbolt — BLE",
+   fields:{"Lock type":"Deadbolt",Connectivity:"Bluetooth (BLE)","Hub required":"No","Smart home platforms":"None (BLE range only)",Protocol:"Bluetooth Low Energy","ANSI grade":"Grade 2","Max codes":"250","Key backup":"No — key free","Built-in alarm":"No","Auto-lock":"Yes","Activity log":"Yes (local)","Fire rating":"Yes – 90 min UL",Handing:"Universal","Power source":"4x AA + 9V backup"},
+   xref:["s4"],caution:"Key-free (no cylinder). 250 codes vs Schlage's 19. Bluetooth app access at door. Upgradeable to WiFi/Z-Wave.",
+   proprietary:["Modular — upgradeable to ZW2 or WF1","Yale Access app (BLE)"],exclusive:["BSP – Black Suede","P05 – Lifetime Brass","250 codes vs 19","BLE app access","Upgradeable connectivity"],
+   variants:[{sku:"YRD634-BLE-619",finish:"619 – Satin Nickel",excl:false},{sku:"YRD634-BLE-BSP",finish:"BSP – Black Suede",excl:true}]},
 
-const PARENTS = [
+  // ── ADDITIONAL YALE PRODUCTS ─────────────────────────────
+  {id:"s10",cat:"smartlock",brand:"ASSA ABLOY (Yale)",bs:"Yale",line:"Yale Pro 2",model:"YRD614-ZW2",name:"Yale Pro 2 Keypad Deadbolt — Z-Wave Plus",
+   fields:{"Lock type":"Deadbolt",Connectivity:"Z-Wave Plus","Hub required":"Yes","Smart home platforms":"SmartThings, Ring Alarm, Alarm.com",Protocol:"Z-Wave Plus","ANSI grade":"Grade 2","Max codes":"250","Key backup":"Yes (KW-1 standard; SC-1 optional)","Built-in alarm":"No","Auto-lock":"Yes","Activity log":"Yes","Fire rating":"Yes – 90 min UL",Handing:"Universal","Power source":"4x AA + 9V backup"},
+   xref:["s3"],caution:"Hub required. Grade 2 vs Schlage Connect Grade 1. 250 codes vs 30. Key backup available. 90-min fire rating.",
+   proprietary:["Modular — upgradeable from BLE base","Yale Access app; accepts KW-1 or SC-1 keyway"],exclusive:["BSP – Black Suede","P05 – Lifetime Brass","250 codes vs 30","Key backup on Z-Wave tier","90-min fire rating"],
+   variants:[{sku:"YRD614-ZW2-619",finish:"619 – Satin Nickel",excl:false},{sku:"YRD614-ZW2-BSP",finish:"BSP – Black Suede",excl:true},{sku:"YRD614-ZW2-P05",finish:"P05 – Lifetime Brass",excl:true}]},
 
-  // ── CYLINDERS ─────────────────────────────────────────────────────────────
+  {id:"s11",cat:"smartlock",brand:"ASSA ABLOY (Yale)",bs:"Yale",line:"Yale Pro 2",model:"YRD614-WF1",name:"Yale Pro 2 Keypad Deadbolt — WiFi",
+   fields:{"Lock type":"Deadbolt",Connectivity:"WiFi (module)","Hub required":"No","Smart home platforms":"Alexa, Google Home, Apple HomeKit",Protocol:"WiFi 2.4GHz","ANSI grade":"Grade 2","Max codes":"250","Key backup":"Yes (KW-1 standard; SC-1 optional)","Built-in alarm":"No","Auto-lock":"Yes","Activity log":"Yes","Fire rating":"Yes – 90 min UL",Handing:"Universal","Power source":"4x AA + 9V backup"},
+   xref:["s1","s2"],caution:"Grade 2 vs Schlage Encode Grade 1. Keypad vs touchscreen. No built-in alarm. 250 codes vs 100. Key backup available.",
+   proprietary:["Modular WiFi; Yale Access app; Auto-Unlock; accepts KW-1 or SC-1 keyway"],exclusive:["BSP – Black Suede","P05 – Lifetime Brass","250 codes vs 100","Key backup on WiFi tier","90-min fire rating"],
+   variants:[{sku:"YRD614-WF1-619",finish:"619 – Satin Nickel",excl:false},{sku:"YRD614-WF1-BSP",finish:"BSP – Black Suede",excl:true},{sku:"YRD614-WF1-P05",finish:"P05 – Lifetime Brass",excl:true}]},
 
-  {
-    id: "CYL-CR-001",
-    cat: "cylinder",
-    brand: "ASSA ABLOY (Corbin Russwin)",
-    bs: "Corbin Russwin",
-    line: "ML2000 Series",
-    model: "1000-118-A01",
-    name: "Standard Mortise Cylinder – L4 Keyway",
-    fields: {
-      Type: "Mortise",
-      "Key control": "Standard",
-      Grade: "ANSI Grade 1",
-      Pins: "6",
-      Keyway: "Corbin L4",
-      "IC format": "N/A",
-      Finish: "605–630 range",
-      Keying: "KD, KA, MK, GMK"
-    },
-    xref: ["CYL-SCH-001"],
-    caution: null,
-    proprietary: [
-      "Corbin L4 keyway — brand-proprietary, not interchangeable with Schlage keyways"
-    ],
-    exclusive: [
-      "612 – Satin Bronze",
-      "613 – Oil Rubbed Bronze"
-    ],
-    variants: [
-      { sku: "x L4 x 626", finish: "626 – Satin Chrome",      excl: false },
-      { sku: "x L4 x 605", finish: "605 – Bright Brass",      excl: false },
-      { sku: "x L4 x 629", finish: "629 – Bright Stainless",  excl: false },
-      { sku: "x L4 x 612", finish: "612 – Satin Bronze",      excl: true  },
-      { sku: "x L4 x 613", finish: "613 – Oil Rubbed Bronze", excl: true  }
-    ]
-  },
+  {id:"s12",cat:"smartlock",brand:"ASSA ABLOY (Yale)",bs:"Yale",line:"Yale Pro 2",model:"YRD654-WF1",name:"Yale Pro 2 Key-Free Touchscreen Deadbolt — WiFi",
+   fields:{"Lock type":"Deadbolt",Connectivity:"WiFi (module)","Hub required":"No","Smart home platforms":"Alexa, Google Home, Apple HomeKit",Protocol:"WiFi 2.4GHz","ANSI grade":"Grade 2","Max codes":"250","Key backup":"No — key free","Built-in alarm":"No","Auto-lock":"Yes","Activity log":"Yes","Fire rating":"Yes – 90 min UL",Handing:"Universal","Power source":"4x AA + 9V backup"},
+   xref:["s1","s2"],caution:"Key-free — no cylinder. Grade 2 vs Schlage Encode Grade 1. No alarm. 250 codes vs 100.",
+   proprietary:["Modular WiFi; Yale Access app; 9V emergency backup terminal"],exclusive:["BSP – Black Suede","P05 – Lifetime Brass","250 codes vs 100","Key-free design (no pick/bump)","90-min fire rating"],
+   variants:[{sku:"YRD654-WF1-619",finish:"619 – Satin Nickel",excl:false},{sku:"YRD654-WF1-BSP",finish:"BSP – Black Suede",excl:true}]},
 
-  {
-    id: "CYL-CR-002",
-    cat: "cylinder",
-    brand: "ASSA ABLOY (Corbin Russwin)",
-    bs: "Corbin Russwin",
-    line: "ML2000HS",
-    model: "Pyramid-ML2000HS",
-    name: "Pyramid High Security Mortise Cylinder",
-    fields: {
-      Type: "Mortise",
-      "Key control": "High Security",
-      Grade: "ANSI Grade 1",
-      Pins: "6",
-      Keyway: "Corbin L4 (Pyramid)",
-      "IC format": "N/A",
-      Finish: "626, 629, 630",
-      Keying: "KD, MK, GMK"
-    },
-    xref: ["CYL-SCH-002"],
-    caution: null,
-    proprietary: [
-      "Pyramid sidebar mechanism — patented, brand-exclusive high security system",
-      "Corbin L4 (Pyramid) keyway — restricted, not duplicable without authorization"
-    ],
-    exclusive: [],
-    variants: [
-      { sku: "Pyramid x L4 x 626", finish: "626 – Satin Chrome", excl: false }
-    ]
-  },
+  {id:"s13",cat:"smartlock",brand:"ASSA ABLOY (Yale)",bs:"Yale",line:"Yale Pro 2",model:"YRD654-ZW2",name:"Yale Pro 2 Key-Free Touchscreen Deadbolt — Z-Wave Plus",
+   fields:{"Lock type":"Deadbolt",Connectivity:"Z-Wave Plus","Hub required":"Yes","Smart home platforms":"SmartThings, Ring Alarm, Alarm.com",Protocol:"Z-Wave Plus","ANSI grade":"Grade 2","Max codes":"250","Key backup":"No — key free","Built-in alarm":"No","Auto-lock":"Yes","Activity log":"Yes","Fire rating":"Yes – 90 min UL",Handing:"Universal","Power source":"4x AA + 9V backup"},
+   xref:["s3"],caution:"Hub required. Key-free. Grade 2 vs Schlage Connect Grade 1. 250 codes vs 30. No alarm.",
+   proprietary:["Modular Z-Wave; Yale Access app; 9V emergency backup"],exclusive:["BSP – Black Suede","250 codes vs 30","Key-free design","90-min fire rating"],
+   variants:[{sku:"YRD654-ZW2-619",finish:"619 – Satin Nickel",excl:false},{sku:"YRD654-ZW2-BSP",finish:"BSP – Black Suede",excl:true}]},
 
-  {
-    id: "CYL-CR-003",
-    cat: "cylinder",
-    brand: "ASSA ABLOY (Corbin Russwin)",
-    bs: "Corbin Russwin",
-    line: "ML2000 Series",
-    model: "Access3-ML2000",
-    name: "Access 3 High Security Mortise Cylinder",
-    fields: {
-      Type: "Mortise",
-      "Key control": "High Security",
-      Grade: "ANSI Grade 1",
-      Pins: "6",
-      Keyway: "Corbin L4 (Access 3)",
-      "IC format": "N/A",
-      Finish: "626, 629",
-      Keying: "KD, MK, GMK, GGMK"
-    },
-    xref: ["CYL-SCH-003"],
-    caution: null,
-    proprietary: [
-      "Access 3 patented key control system — highest security tier, geographically restricted",
-      "Corbin L4 (Access 3) keyway — patented, cannot be duplicated without factory authorization"
-    ],
-    exclusive: [],
-    variants: [
-      { sku: "Access 3 x L4 x 626", finish: "626 – Satin Chrome", excl: false }
-    ]
-  },
+  // ── ADDITIONAL SCHLAGE PRODUCTS ──────────────────────────
+  {id:"s14",cat:"smartlock",brand:"Schlage (Allegion)",bs:"Schlage",line:"Connect",model:"BE468ZP",name:"Connect Smart Deadbolt — No Alarm, Z-Wave Plus",
+   fields:{"Lock type":"Deadbolt",Connectivity:"Z-Wave Plus","Hub required":"Yes","Smart home platforms":"SmartThings, Ring Alarm, Alarm.com, Wink",Protocol:"Z-Wave Plus","ANSI grade":"Grade 2","Max codes":"30","Key backup":"No","Built-in alarm":"No","Auto-lock":"Yes","Activity log":"Yes (via hub)","Fire rating":"No",Handing:"Universal","Power source":"4x AA"},
+   xref:["s6","s10","s13"],caution:"Grade 2. No alarm (unlike BE469). Hub required. Only 30 codes vs Yale's 250. No key backup.",
+   proprietary:["Resistive touchscreen — wear-pattern undetectable","Snap & Stay™"],exclusive:[],
+   variants:[{sku:"BE468ZP CAM 619",finish:"619 – Satin Nickel",excl:false},{sku:"BE468ZP CEN 622",finish:"622 – Matte Black",excl:false}]},
 
-  {
-    id: "CYL-CR-004",
-    cat: "cylinder",
-    brand: "ASSA ABLOY (Corbin Russwin)",
-    bs: "Corbin Russwin",
-    line: "ML2000 Series",
-    model: "SFIC-ML2000",
-    name: "Small Format IC Housing – Mortise",
-    fields: {
-      Type: "Mortise",
-      "Key control": "Restricted",
-      Grade: "ANSI Grade 1",
-      Pins: "7",
-      Keyway: "SFIC (Best/ASSA)",
-      "IC format": "Best SFIC",
-      Finish: "606, 626",
-      Keying: "KD, MK, GMK, GGMK"
-    },
-    xref: ["CYL-SCH-004"],
-    // Caution shown even on Partial — IC format mismatch is a physical incompatibility
-    caution: "IC core formats are physically incompatible — Best SFIC cores cannot be used in Schlage FSIC housings.",
-    proprietary: [
-      "Best SFIC format — ASSA ABLOY/Best IC standard, not compatible with Schlage FSIC"
-    ],
-    exclusive: [],
-    variants: [
-      { sku: "SFIC x ML2000 x 626", finish: "626 – Satin Chrome", excl: false }
-    ]
-  },
+  {id:"s15",cat:"smartlock",brand:"Schlage (Allegion)",bs:"Schlage",line:"Touch",model:"BE375",name:"Touch Keyless Touchscreen Deadbolt",
+   fields:{"Lock type":"Deadbolt",Connectivity:"None (standalone)","Hub required":"No","Smart home platforms":"None",Protocol:"None","ANSI grade":"Grade 2","Max codes":"19","Key backup":"No","Built-in alarm":"No","Auto-lock":"No","Activity log":"No","Fire rating":"No",Handing:"Universal","Power source":"4x AA; 9V backup"},
+   xref:["s9"],caution:"Standalone only. No key backup and no keyhole — cannot be picked. 19 codes only. No app or connectivity.",
+   proprietary:["No keyhole — eliminates pick/bump attack vector","Fingerprint-resistant capacitive touchscreen"],exclusive:[],
+   variants:[{sku:"BE375 CAM 619",finish:"619 – Satin Nickel",excl:false},{sku:"BE375 CEN 622",finish:"622 – Matte Black",excl:false},{sku:"BE375 CEN 626",finish:"626 – Satin Chrome",excl:false}]},
+];
 
-  {
-    id: "CYL-SCH-001",
-    cat: "cylinder",
-    brand: "Schlage (Allegion)",
-    bs: "Schlage",
-    line: "L Series (L9000)",
-    model: "20-001",
-    name: "Conventional Mortise Cylinder – Everest C123",
-    fields: {
-      Type: "Mortise",
-      "Key control": "Standard",
-      Grade: "ANSI Grade 1",
-      Pins: "6",
-      Keyway: "Schlage Everest C123",
-      "IC format": "N/A",
-      Finish: "605–643E range",
-      Keying: "KD, KA, MK, GMK"
-    },
-    xref: ["CYL-CR-001"],
-    caution: null,
-    proprietary: [
-      "Schlage Everest C123 keyway — patented, two keys included, unauthorized duplication prohibited"
-    ],
-    exclusive: [
-      "643E – Aged Bronze"  // Not available in Corbin Russwin standard cylinder line
-    ],
-    variants: [
-      { sku: "20-001 C123 626",  finish: "626 – Satin Chrome",     excl: false },
-      { sku: "20-001 C123 605",  finish: "605 – Bright Brass",     excl: false },
-      { sku: "20-001 C123 629",  finish: "629 – Bright Stainless", excl: false },
-      { sku: "20-001 C123 643E", finish: "643E – Aged Bronze",     excl: true  }
-    ]
-  },
+const THRESHOLDS = [
+  // ── NGP (NATIONAL GUARD PRODUCTS) ─────────────────────────
+  {id:"t1",cat:"threshold",brand:"NGP (National Guard Products)",bs:"NGP",line:"Saddle Thresholds",model:"413",
+   name:"Saddle Threshold — 5\" Wide, 1/4\" Rise",
+   fields:{"Profile type":"Saddle","Width":"5\"","Height":"1/4\"","Material":"Aluminum 6063-T5",
+            "ADA compliant":"Yes","Fire rated":"Yes — UL10C","Thermal break":"No","Seal type":"None standard",
+            "Slip resistant":"Yes — SIA option","Wall thickness":".125\"","Finish":"Mill, DKB, SIA","Alloy":"6063-T5"},
+   xref:["t4"],caution:null,
+   proprietary:["SIA slip-resistant finish — nickel/titanium embedded surface, aircraft carrier origin"],
+   exclusive:["Architectural Bronze variant (413BR)","Stainless Steel variant (413SS)"],
+   variants:[{sku:"413",finish:"Mill finish (US27)",excl:false},{sku:"413DKB",finish:"Dark Bronze (DKB)",excl:false},{sku:"413SIA",finish:"Slip Resistant (SIA)",excl:false},{sku:"413BR",finish:"Architectural Bronze",excl:true},{sku:"413SS",finish:"Stainless Steel",excl:true}]},
 
-  {
-    id: "CYL-SCH-002",
-    cat: "cylinder",
-    brand: "Schlage (Allegion)",
-    bs: "Schlage",
-    line: "L Series – Primus",
-    model: "20-700-EP",
-    name: "Primus High Security Mortise Cylinder – EP Keyway",
-    fields: {
-      Type: "Mortise",
-      "Key control": "High Security",
-      Grade: "ANSI Grade 1",
-      Pins: "6",
-      Keyway: "Schlage Primus (EP)",
-      "IC format": "N/A",
-      Finish: "605–626 range",
-      Keying: "KD, MK, GMK"
-    },
-    xref: ["CYL-CR-002"],
-    caution: null,
-    proprietary: [
-      "Primus sidebar mechanism — patented high security, restricted key duplication",
-      "Schlage Primus EP keyway — geographically restricted, factory-controlled"
-    ],
-    exclusive: [],
-    variants: [
-      { sku: "20-700 EP 626", finish: "626 – Satin Chrome", excl: false }
-    ]
-  },
+  {id:"t2",cat:"threshold",brand:"NGP (National Guard Products)",bs:"NGP",line:"Saddle Thresholds",model:"513",
+   name:"Saddle Threshold — 6\" Wide, 1/4\" Rise",
+   fields:{"Profile type":"Saddle","Width":"6\"","Height":"1/4\"","Material":"Aluminum 6063-T5",
+            "ADA compliant":"Yes","Fire rated":"Yes — UL10C","Thermal break":"No","Seal type":"None standard",
+            "Slip resistant":"Yes — SIA option","Wall thickness":".125\"","Finish":"Mill, DKB, SIA","Alloy":"6063-T5"},
+   xref:["t5"],caution:null,
+   proprietary:["SIA slip-resistant finish"],exclusive:["Stainless Steel variant (513SS)"],
+   variants:[{sku:"513",finish:"Mill finish (US27)",excl:false},{sku:"513DKB",finish:"Dark Bronze (DKB)",excl:false},{sku:"513SS",finish:"Stainless Steel",excl:true}]},
 
-  {
-    id: "CYL-SCH-003",
-    cat: "cylinder",
-    brand: "Schlage (Allegion)",
-    bs: "Schlage",
-    line: "L Series – Primus XP",
-    model: "20-700-CP",
-    name: "Primus XP High Security Mortise Cylinder – CP Keyway",
-    fields: {
-      Type: "Mortise",
-      "Key control": "High Security",
-      Grade: "ANSI Grade 1",
-      Pins: "6",
-      Keyway: "Schlage Primus XP (CP)",
-      "IC format": "N/A",
-      Finish: "605–626 range",
-      Keying: "KD, MK, GMK, GGMK"
-    },
-    xref: ["CYL-CR-003"],
-    caution: null,
-    proprietary: [
-      "Primus XP — highest Schlage key control tier, patented sidebar + keyway",
-      "CP keyway — geographically restricted, top-tier access control"
-    ],
-    exclusive: [],
-    variants: [
-      { sku: "20-700 CP 626", finish: "626 – Satin Chrome", excl: false }
-    ]
-  },
+  {id:"t3",cat:"threshold",brand:"NGP (National Guard Products)",bs:"NGP",line:"Saddle Thresholds",model:"713",
+   name:"Saddle Threshold — 8\" Wide, 1/4\" Rise",
+   fields:{"Profile type":"Saddle","Width":"8\"","Height":"1/4\"","Material":"Aluminum 6063-T5",
+            "ADA compliant":"Yes","Fire rated":"Yes — UL10C","Thermal break":"No","Seal type":"None standard",
+            "Slip resistant":"Yes — SIA option","Wall thickness":".125\"","Finish":"Mill, DKB, SIA","Alloy":"6063-T5"},
+   xref:["t6"],caution:null,
+   proprietary:["SIA slip-resistant finish"],exclusive:["Stainless Steel variant (713SS)"],
+   variants:[{sku:"713",finish:"Mill finish (US27)",excl:false},{sku:"713DKB",finish:"Dark Bronze (DKB)",excl:false},{sku:"713SS",finish:"Stainless Steel",excl:true}]},
 
-  {
-    id: "CYL-SCH-004",
-    cat: "cylinder",
-    brand: "Schlage (Allegion)",
-    bs: "Schlage",
-    line: "L Series – FSIC",
-    model: "FSIC-L9000",
-    name: "Full Size IC Housing – Mortise",
-    fields: {
-      Type: "Mortise",
-      "Key control": "Restricted",
-      Grade: "ANSI Grade 1",
-      Pins: "6",
-      Keyway: "Schlage FSIC",
-      "IC format": "Schlage FSIC",
-      Finish: "606, 626",
-      Keying: "KD, MK, GMK, GGMK"
-    },
-    xref: ["CYL-CR-004"],
-    caution: "Schlage FSIC and Best SFIC are different IC standards — cores do not interchange.",
-    proprietary: [
-      "Schlage FSIC format — manufacturer-specific, not compatible with Best SFIC or other IC standards"
-    ],
-    exclusive: [],
-    variants: [
-      { sku: "FSIC-L9000 x 626", finish: "626 – Satin Chrome", excl: false }
-    ]
-  },
+  {id:"t7",cat:"threshold",brand:"NGP (National Guard Products)",bs:"NGP",line:"Heavy Duty Thresholds",model:"325HD",
+   name:"Heavy Duty Saddle Threshold — 5\" Wide, 1/2\" Rise",
+   fields:{"Profile type":"Saddle — Heavy Duty","Width":"5\"","Height":"1/2\"","Material":"Aluminum 6063-T5",
+            "ADA compliant":"No — 1/2\" exceeds ADA max","Fire rated":"Yes — UL10C","Thermal break":"No",
+            "Seal type":"Bumper seal (vinyl/TPV/silicone)",
+            "Slip resistant":"Yes — SIA recommended","Wall thickness":".250\"","Finish":"Mill, DKB, SIA","Alloy":"6063-T5"},
+   xref:["t10"],caution:"1/2\" rise is NOT ADA compliant. For forklift/vehicular traffic — loading docks, warehouses.",
+   proprietary:["SIA slip-resistant finish","BHMA A156.21 Heavy Duty 10,000 lb load certification"],exclusive:[],
+   variants:[{sku:"325HD",finish:"Mill finish (US27)",excl:false},{sku:"325HDDKB",finish:"Dark Bronze (DKB)",excl:false}]},
 
-  // ── CLOSERS ───────────────────────────────────────────────────────────────
+  {id:"t8",cat:"threshold",brand:"NGP (National Guard Products)",bs:"NGP",line:"Thermal Break Thresholds",model:"8426",
+   name:"Thermal Break Saddle Threshold",
+   fields:{"Profile type":"Saddle — Thermal Break","Width":"Varies","Height":"1/2\"","Material":"Aluminum + thermal break insert",
+            "ADA compliant":"No — 1/2\" rise; ramp required","Fire rated":"Yes — UL10C","Thermal break":"Yes",
+            "Seal type":"None standard","Slip resistant":"Yes — SIA option","Wall thickness":"Varies","Finish":"Mill, DKB, SIA","Alloy":"6063-T5 + polymer break"},
+   xref:["t11"],caution:"Thermal break — verify U-value meets energy code requirement. 1/2\" rise requires ramp for ADA.",
+   proprietary:["SIA slip-resistant finish","Thermal barrier assembly"],exclusive:[],
+   variants:[{sku:"8426",finish:"Mill finish (US27)",excl:false},{sku:"8426DKB",finish:"Dark Bronze (DKB)",excl:false}]},
 
-  {
-    id: "CLO-NOR-001",
-    cat: "closer",
-    brand: "ASSA ABLOY (Norton/Rixon)",
-    bs: "Norton/Rixon",
-    line: "7500 Series",
-    model: "7500",
-    name: "7500 Regular Arm Closer",
-    fields: {
-      "ANSI size":      "3",
-      Mounting:         "Regular arm",
-      "Arm type":       "Regular",
-      "Fire rated":     "Yes – UL10C",
-      "Max door (lbs)": "125",
-      "Max width (in)": "44",
-      Delayed:          "Available",
-      Backcheck:        "Available",
-      Template:         "Norton 7500 template",
-      Finish:           "689 – Aluminum",
-      "Hold open":      "No",
-      "Size range":     "1–6 adjustable"
-    },
-    xref: ["CLO-LCN-001", "CLO-DK-001"],
-    caution: null,
-    proprietary: [
-      "Norton 7500 mounting template — adapter plates needed to retrofit to LCN or dormakaba prep"
-    ],
-    exclusive: [],
-    variants: [
-      { sku: "7500-3 x 689", finish: "689 – Aluminum",    excl: false },
-      { sku: "7500-3 x 690", finish: "690 – Primed",      excl: false },
-      { sku: "7500-3 x 693", finish: "693 – Dark Bronze",  excl: false }
-    ]
-  },
+  {id:"t9",cat:"threshold",brand:"NGP (National Guard Products)",bs:"NGP",line:"ADA Bumper Seal Thresholds",model:"896",
+   name:"ADA Bumper Seal Threshold — 5\" Wide",
+   fields:{"Profile type":"Bumper Seal — ADA","Width":"5\"","Height":"1/4\" max","Material":"Aluminum 6063-T5",
+            "ADA compliant":"Yes","Fire rated":"Yes — UL10C","Thermal break":"No",
+            "Seal type":"Bumper seal against door face (vinyl/TPV/silicone)",
+            "Slip resistant":"Yes — SIA option","Wall thickness":".078\"","Finish":"Mill, DKB, SIA","Alloy":"6063-T5"},
+   xref:["t12"],caution:"Bumper seal contacts door face — different from floor-contact vinyl insert. Verify which spec requires.",
+   proprietary:["SIA slip-resistant finish","Vinyl foot seal option (replaces caulking)"],exclusive:[],
+   variants:[{sku:"896",finish:"Mill finish (US27)",excl:false},{sku:"896DKB",finish:"Dark Bronze (DKB)",excl:false}]},
 
-  {
-    id: "CLO-NOR-002",
-    cat: "closer",
-    brand: "ASSA ABLOY (Norton/Rixon)",
-    bs: "Norton/Rixon",
-    line: "7500 Series",
-    model: "7500-DA",
-    name: "7500 Regular Arm with Delayed Action",
-    fields: {
-      "ANSI size":      "3",
-      Mounting:         "Regular arm",
-      "Arm type":       "Regular",
-      "Fire rated":     "Yes – UL10C",
-      "Max door (lbs)": "125",
-      "Max width (in)": "44",
-      Delayed:          "Yes – built in",
-      Backcheck:        "Available",
-      Template:         "Norton 7500 template",
-      Finish:           "689 – Aluminum",
-      "Hold open":      "No",
-      "Size range":     "1–6 adjustable"
-    },
-    xref: ["CLO-LCN-002", "CLO-DK-002"],
-    caution: null,
-    proprietary: [
-      "Norton 7500 mounting template — adapter plates needed for retrofit"
-    ],
-    exclusive: [],
-    variants: [
-      { sku: "7500-DA-3 x 689", finish: "689 – Aluminum",   excl: false },
-      { sku: "7500-DA-3 x 693", finish: "693 – Dark Bronze", excl: false }
-    ]
-  },
+  // ── PEMKO (ASSA ABLOY) ───────────────────────────────────
+  {id:"t4",cat:"threshold",brand:"ASSA ABLOY (Pemko)",bs:"Pemko",line:"Commercial Saddle Thresholds",model:"271",
+   name:"Saddle Threshold — 5\" Wide, 1/4\" Rise",
+   fields:{"Profile type":"Saddle","Width":"5\"","Height":"1/4\"","Material":"Aluminum",
+            "ADA compliant":"Yes","Fire rated":"Yes — UL10C","Thermal break":"No","Seal type":"None standard",
+            "Slip resistant":"Yes — PemKote option (10-yr warranty)","Wall thickness":"Standard","Finish":"A, BDG, B, G, PW, SN","Alloy":"Aluminum extrusion"},
+   xref:["t1"],caution:null,
+   proprietary:["PemKote abrasive slip-resistant surface — 10-year warranty"],
+   exclusive:["BDG Dark Bronze","G Gunmetal","PW Pewter","SN Satin Nickel (finishes not in NGP range)"],
+   variants:[{sku:"271A",finish:"Aluminum (A)",excl:false},{sku:"271BDG",finish:"Dark Bronze (BDG)",excl:false},{sku:"271G",finish:"Gunmetal (G)",excl:true},{sku:"271PW",finish:"Pewter (PW)",excl:true},{sku:"271SN",finish:"Satin Nickel (SN)",excl:true}]},
 
-  {
-    id: "CLO-NOR-003",
-    cat: "closer",
-    brand: "ASSA ABLOY (Norton/Rixon)",
-    bs: "Norton/Rixon",
-    line: "7500 Series",
-    model: "7500-PA",
-    name: "7500 Parallel Arm Closer",
-    fields: {
-      "ANSI size":      "3",
-      Mounting:         "Parallel arm",
-      "Arm type":       "Parallel",
-      "Fire rated":     "Yes – UL10C",
-      "Max door (lbs)": "125",
-      "Max width (in)": "44",
-      Delayed:          "Available",
-      Backcheck:        "Available",
-      Template:         "Norton 7500 template",
-      Finish:           "689 – Aluminum",
-      "Hold open":      "No",
-      "Size range":     "1–6 adjustable"
-    },
-    xref: ["CLO-LCN-003", "CLO-DK-003"],
-    caution: null,
-    proprietary: [
-      "Norton 7500 mounting template — adapter plates needed for retrofit"
-    ],
-    exclusive: [],
-    variants: [
-      { sku: "7500-PA-3 x 689", finish: "689 – Aluminum", excl: false }
-    ]
-  },
+  {id:"t5",cat:"threshold",brand:"ASSA ABLOY (Pemko)",bs:"Pemko",line:"Commercial Saddle Thresholds",model:"272",
+   name:"Saddle Threshold — 6\" Wide, 1/4\" Rise",
+   fields:{"Profile type":"Saddle","Width":"6\"","Height":"1/4\"","Material":"Aluminum",
+            "ADA compliant":"Yes","Fire rated":"Yes — UL10C","Thermal break":"No","Seal type":"None standard",
+            "Slip resistant":"Yes — PemKote option (10-yr warranty)","Wall thickness":"Standard","Finish":"A, BDG, B, G, PW, SN","Alloy":"Aluminum extrusion"},
+   xref:["t2"],caution:null,
+   proprietary:["PemKote abrasive slip-resistant surface — 10-year warranty"],
+   exclusive:["G Gunmetal","PW Pewter","SN Satin Nickel"],
+   variants:[{sku:"272A",finish:"Aluminum (A)",excl:false},{sku:"272BDG",finish:"Dark Bronze (BDG)",excl:false},{sku:"272SN",finish:"Satin Nickel (SN)",excl:true}]},
 
-  {
-    id: "CLO-LCN-001",
-    cat: "closer",
-    brand: "Allegion (LCN)",
-    bs: "LCN",
-    line: "4040XP Series",
-    model: "4040XP",
-    name: "4040XP Regular Arm Closer",
-    fields: {
-      "ANSI size":      "3",
-      Mounting:         "Regular arm",
-      "Arm type":       "Regular",
-      "Fire rated":     "Yes – UL10C",
-      "Max door (lbs)": "125",
-      "Max width (in)": "44",
-      Delayed:          "Available",
-      Backcheck:        "Available",
-      Template:         "LCN 4040XP template",
-      Finish:           "689 – Aluminum",
-      "Hold open":      "No",
-      "Size range":     "1–6 adjustable"
-    },
-    xref: ["CLO-NOR-001", "CLO-DK-001"],
-    caution: "Mounting templates differ — adapter plates required for direct retrofit. Functional performance is equivalent.",
-    proprietary: [
-      "LCN 4040XP mounting template — differs from Norton and dormakaba preps"
-    ],
-    exclusive: [
-      "696 – Satin Chrome",          // Not available from Norton or dormakaba
-      "SCUSH (Cushion Stop) option"  // No equivalent exists in Norton 7500 family
-    ],
-    variants: [
-      { sku: "4040XP x 689",   finish: "689 – Aluminum",   excl: false },
-      { sku: "4040XP x 693",   finish: "693 – Dark Bronze", excl: false },
-      { sku: "4040XP x 696",   finish: "696 – Satin Chrome", excl: true },
-      { sku: "4040XP-SCUSH",   finish: "689 – Aluminum",   excl: true, note: "Cushion stop — no Norton/dormakaba equivalent" }
-    ]
-  },
+  {id:"t6",cat:"threshold",brand:"ASSA ABLOY (Pemko)",bs:"Pemko",line:"Commercial Saddle Thresholds",model:"273",
+   name:"Saddle Threshold — 8\" Wide, 1/4\" Rise",
+   fields:{"Profile type":"Saddle","Width":"8\"","Height":"1/4\"","Material":"Aluminum",
+            "ADA compliant":"Yes","Fire rated":"Yes — UL10C","Thermal break":"No","Seal type":"None standard",
+            "Slip resistant":"Yes — PemKote option (10-yr warranty)","Wall thickness":"Standard","Finish":"A, BDG, B, G, PW, SN","Alloy":"Aluminum extrusion"},
+   xref:["t3"],caution:null,
+   proprietary:["PemKote abrasive slip-resistant surface — 10-year warranty"],
+   exclusive:["G Gunmetal","PW Pewter","SN Satin Nickel"],
+   variants:[{sku:"273A",finish:"Aluminum (A)",excl:false},{sku:"273BDG",finish:"Dark Bronze (BDG)",excl:false},{sku:"273SN",finish:"Satin Nickel (SN)",excl:true}]},
 
-  {
-    id: "CLO-LCN-002",
-    cat: "closer",
-    brand: "Allegion (LCN)",
-    bs: "LCN",
-    line: "4040XP Series",
-    model: "4040XP-EDA",
-    name: "4040XP Regular Arm with Delayed Action",
-    fields: {
-      "ANSI size":      "3",
-      Mounting:         "Regular arm",
-      "Arm type":       "Regular",
-      "Fire rated":     "Yes – UL10C",
-      "Max door (lbs)": "125",
-      "Max width (in)": "44",
-      Delayed:          "Yes – built in",
-      Backcheck:        "Available",
-      Template:         "LCN 4040XP template",
-      Finish:           "689 – Aluminum",
-      "Hold open":      "No",
-      "Size range":     "1–6 adjustable"
-    },
-    xref: ["CLO-NOR-002", "CLO-DK-002"],
-    caution: "Mounting templates differ — adapter plates required for direct retrofit.",
-    proprietary: [
-      "LCN 4040XP mounting template — differs from Norton and dormakaba preps"
-    ],
-    exclusive: ["696 – Satin Chrome"],
-    variants: [
-      { sku: "4040XP-EDA x 689", finish: "689 – Aluminum",    excl: false },
-      { sku: "4040XP-EDA x 696", finish: "696 – Satin Chrome", excl: true  }
-    ]
-  },
+  {id:"t10",cat:"threshold",brand:"ASSA ABLOY (Pemko)",bs:"Pemko",line:"Heavy Duty Thresholds",model:"1715",
+   name:"Heavy Duty Threshold — 5\" Wide, 1/2\" Rise",
+   fields:{"Profile type":"Saddle — Heavy Duty","Width":"5\"","Height":"1/2\"","Material":"Aluminum — heavy gauge",
+            "ADA compliant":"No — 1/2\" exceeds ADA max","Fire rated":"Yes — UL10C","Thermal break":"No",
+            "Seal type":"None standard","Slip resistant":"Yes — PemKote recommended",
+            "Wall thickness":"Heavy gauge","Finish":"A, BDG","Alloy":"Aluminum extrusion — HD"},
+   xref:["t7"],caution:"1/2\" rise — NOT ADA compliant. Forklift/vehicular traffic applications.",
+   proprietary:["PemKote abrasive slip-resistant surface — 10-year warranty"],exclusive:[],
+   variants:[{sku:"1715A",finish:"Aluminum (A)",excl:false},{sku:"1715BDG",finish:"Dark Bronze (BDG)",excl:false}]},
 
-  {
-    id: "CLO-LCN-003",
-    cat: "closer",
-    brand: "Allegion (LCN)",
-    bs: "LCN",
-    line: "4040XP Series",
-    model: "4040XP-PA",
-    name: "4040XP Parallel Arm Closer",
-    fields: {
-      "ANSI size":      "3",
-      Mounting:         "Parallel arm",
-      "Arm type":       "Parallel",
-      "Fire rated":     "Yes – UL10C",
-      "Max door (lbs)": "125",
-      "Max width (in)": "44",
-      Delayed:          "Available",
-      Backcheck:        "Available",
-      Template:         "LCN 4040XP template",
-      Finish:           "689 – Aluminum",
-      "Hold open":      "No",
-      "Size range":     "1–6 adjustable"
-    },
-    xref: ["CLO-NOR-003", "CLO-DK-003"],
-    caution: "Mounting templates differ — adapter plates required for direct retrofit.",
-    proprietary: [
-      "LCN 4040XP mounting template — differs from Norton and dormakaba preps"
-    ],
-    exclusive: [],
-    variants: [
-      { sku: "4040XP-PA x 689", finish: "689 – Aluminum", excl: false }
-    ]
-  },
+  {id:"t11",cat:"threshold",brand:"ASSA ABLOY (Pemko)",bs:"Pemko",line:"Thermal Barrier Saddle Thresholds",model:"255x5",
+   name:"Thermal Barrier Saddle Threshold",
+   fields:{"Profile type":"Saddle — Thermal Break","Width":"Varies","Height":"1/2\"","Material":"Aluminum + thermal break insert",
+            "ADA compliant":"No — 1/2\" rise; ramp required","Fire rated":"Yes — UL10C","Thermal break":"Yes",
+            "Seal type":"None standard","Slip resistant":"Yes — PemKote option",
+            "Wall thickness":"Varies","Finish":"A, BDG","Alloy":"Aluminum + polymer break"},
+   xref:["t8"],caution:"Thermal break — verify U-value meets energy code. 1/2\" rise requires ramp for ADA.",
+   proprietary:["PemKote slip-resistant surface","Thermal barrier assembly"],exclusive:[],
+   variants:[{sku:"255x5A",finish:"Aluminum (A)",excl:false},{sku:"255x5BDG",finish:"Dark Bronze (BDG)",excl:false}]},
 
-  {
-    id: "CLO-DK-001",
-    cat: "closer",
-    brand: "dormakaba",
-    bs: "dormakaba",
-    line: "RTS73 Series",
-    model: "RTS73",
-    name: "RTS73 Regular Arm Closer",
-    fields: {
-      "ANSI size":      "3",
-      Mounting:         "Regular arm",
-      "Arm type":       "Regular",
-      "Fire rated":     "Yes – UL10C",
-      "Max door (lbs)": "120",  // Lower than Norton/LCN (125) — flagged in red in diff table
-      "Max width (in)": "42",   // Lower than Norton/LCN (44) — flagged in red
-      Delayed:          "Available",
-      Backcheck:        "Available",
-      Template:         "dormakaba RTS73 template",
-      Finish:           "689 – Aluminum",
-      "Hold open":      "No",
-      "Size range":     "1–6 adjustable"
-    },
-    xref: ["CLO-NOR-001", "CLO-LCN-001"],
-    caution: "Max door weight (120 lbs) and width (42\") are lower than Norton/LCN. Verify door spec before substituting.",
-    proprietary: [
-      "dormakaba RTS73 mounting template — differs from Norton and LCN preps"
-    ],
-    exclusive: [],
-    variants: [
-      { sku: "RTS73 x 689", finish: "689 – Aluminum", excl: false },
-      { sku: "RTS73 x 690", finish: "690 – Primed",   excl: false }
-    ]
-  },
+  {id:"t12",cat:"threshold",brand:"ASSA ABLOY (Pemko)",bs:"Pemko",line:"Commercial Saddle Thresholds",model:"2748",
+   name:"Saddle Threshold with Vinyl Insert — ADA Compliant",
+   fields:{"Profile type":"Bumper Seal — ADA","Width":"4–5\"","Height":"1/4\" max","Material":"Aluminum with vinyl insert",
+            "ADA compliant":"Yes","Fire rated":"Yes — UL10C","Thermal break":"No",
+            "Seal type":"Vinyl insert — floor-contact seal",
+            "Slip resistant":"Yes — PemKote option","Wall thickness":"Standard","Finish":"A, BDG","Alloy":"Aluminum extrusion"},
+   xref:["t9"],caution:"Seal design differs from NGP 896 — floor-contact vinyl insert vs door-face bumper seal. Verify spec calls for this seal style.",
+   proprietary:["PemKote slip-resistant surface","Integral vinyl insert design"],
+   exclusive:["Vinyl floor-contact seal design — different from NGP bumper approach"],
+   variants:[{sku:"2748A",finish:"Aluminum (A)",excl:false},{sku:"2748BDG",finish:"Dark Bronze (BDG)",excl:false}]},
+];
 
-  {
-    id: "CLO-DK-002",
-    cat: "closer",
-    brand: "dormakaba",
-    bs: "dormakaba",
-    line: "RTS73 Series",
-    model: "RTS73-EDA",
-    name: "RTS73 Regular Arm with Delayed Action",
-    fields: {
-      "ANSI size":      "3",
-      Mounting:         "Regular arm",
-      "Arm type":       "Regular",
-      "Fire rated":     "Yes – UL10C",
-      "Max door (lbs)": "120",
-      "Max width (in)": "42",
-      Delayed:          "Yes – built in",
-      Backcheck:        "Available",
-      Template:         "dormakaba RTS73 template",
-      Finish:           "689 – Aluminum",
-      "Hold open":      "No",
-      "Size range":     "1–6 adjustable"
-    },
-    xref: ["CLO-NOR-002", "CLO-LCN-002"],
-    caution: "Max door weight (120 lbs) and width (42\") are lower than Norton/LCN. Verify before substituting.",
-    proprietary: [
-      "dormakaba RTS73 mounting template — differs from Norton and LCN preps"
-    ],
-    exclusive: [],
-    variants: [
-      { sku: "RTS73-EDA x 689", finish: "689 – Aluminum", excl: false }
-    ]
-  },
+const ALL = [...CYLINDERS, ...CLOSERS, ...SMARTLOCKS, ...THRESHOLDS];
+const IDX = Object.fromEntries(ALL.map(p=>[p.id,p]));
+let activeCat="all", selected=null, variantOpen={};
 
-  {
-    id: "CLO-DK-003",
-    cat: "closer",
-    brand: "dormakaba",
-    bs: "dormakaba",
-    line: "RTS73 Series",
-    model: "RTS73-PA",
-    name: "RTS73 Parallel Arm Closer",
-    fields: {
-      "ANSI size":      "3",
-      Mounting:         "Parallel arm",
-      "Arm type":       "Parallel",
-      "Fire rated":     "Yes – UL10C",
-      "Max door (lbs)": "120",
-      "Max width (in)": "42",
-      Delayed:          "Available",
-      Backcheck:        "Available",
-      Template:         "dormakaba RTS73 template",
-      Finish:           "689 – Aluminum",
-      "Hold open":      "No",
-      "Size range":     "1–6 adjustable"
-    },
-    xref: ["CLO-NOR-003", "CLO-LCN-003"],
-    caution: "Max door weight (120 lbs) and width (42\") are lower than Norton/LCN. Verify before substituting.",
-    proprietary: [
-      "dormakaba RTS73 mounting template — differs from Norton and LCN preps"
-    ],
-    exclusive: [],
-    variants: [
-      { sku: "RTS73-PA x 689", finish: "689 – Aluminum", excl: false }
-    ]
-  }
-
-]; // end PARENTS array
-
-
-/* ============================================================
-   C. LOOKUP INDEX
-   ------------------------------------------------------------
-   Converts the PARENTS array into a key-value object for fast
-   access by ID. IDX["CYL-CR-001"] returns the full product object.
-   Used in renderComparables() to look up xref products.
-
-   Object.fromEntries() builds { id: product } pairs from the array.
-   ============================================================ */
-const IDX = Object.fromEntries(PARENTS.map(p => [p.id, p]));
-
-
-/* ============================================================
-   D. APPLICATION STATE
-   ------------------------------------------------------------
-   These two variables track the current state of the UI.
-   activeCat: which category filter is selected ("all", "cylinder", "closer")
-   selected:  the product object the user clicked in Step 1, or null
-   variantOpen: tracks which variant drawers are expanded (by product id)
-   ============================================================ */
-let activeCat = "all";
-let selected = null;
-let variantOpen = {};
-
-
-/* ============================================================
-   E. HINT TEXT BY CATEGORY
-   ------------------------------------------------------------
-   Search hint examples shown below the search bar.
-   Updated by setCat() when the user switches category filter.
-   ============================================================ */
+// ── C. HINTS ─────────────────────────────────────────────
 const HINTS = {
-  all:      "Try: <code>Norton</code> &nbsp;·&nbsp; <code>4040XP</code> &nbsp;·&nbsp; <code>Primus</code> &nbsp;·&nbsp; <code>parallel arm</code> &nbsp;·&nbsp; <code>626</code> &nbsp;·&nbsp; <code>SFIC</code>",
-  cylinder: "Try: <code>ML2000</code> &nbsp;·&nbsp; <code>Primus</code> &nbsp;·&nbsp; <code>626</code> &nbsp;·&nbsp; <code>SFIC</code> &nbsp;·&nbsp; <code>20-001</code>",
-  closer:   "Try: <code>Norton 7500</code> &nbsp;·&nbsp; <code>4040XP</code> &nbsp;·&nbsp; <code>parallel arm</code> &nbsp;·&nbsp; <code>delayed action</code> &nbsp;·&nbsp; <code>RTS73</code>"
+  all:       "Try: <code>413</code> &nbsp;·&nbsp; <code>saddle</code> &nbsp;·&nbsp; <code>ADA</code> &nbsp;·&nbsp; <code>Encode Plus</code> &nbsp;·&nbsp; <code>Yale Pro</code> &nbsp;·&nbsp; <code>Norton</code> &nbsp;·&nbsp; <code>Primus</code>",
+  cylinder:  "Try: <code>ML2000</code> &nbsp;·&nbsp; <code>Primus</code> &nbsp;·&nbsp; <code>626</code> &nbsp;·&nbsp; <code>SFIC</code> &nbsp;·&nbsp; <code>20-001</code>",
+  closer:    "Try: <code>Norton 7500</code> &nbsp;·&nbsp; <code>4040XP</code> &nbsp;·&nbsp; <code>parallel arm</code> &nbsp;·&nbsp; <code>RTS73</code>",
+  smartlock: "Try: <code>Encode Plus</code> &nbsp;·&nbsp; <code>Yale Pro</code> &nbsp;·&nbsp; <code>WiFi</code> &nbsp;·&nbsp; <code>Z-Wave</code> &nbsp;·&nbsp; <code>BE499</code> &nbsp;·&nbsp; <code>YRD624</code>",
+  threshold: "Try: <code>413</code> &nbsp;·&nbsp; <code>saddle</code> &nbsp;·&nbsp; <code>ADA</code> &nbsp;·&nbsp; <code>heavy duty</code> &nbsp;·&nbsp; <code>thermal</code> &nbsp;·&nbsp; <code>NGP</code> &nbsp;·&nbsp; <code>Pemko</code>"
 };
 
-
-/* ============================================================
-   F. UTILITY / HELPER FUNCTIONS
-   ============================================================ */
-
-// pool() — returns the subset of PARENTS to search based on activeCat
-function pool() {
-  return activeCat === "all" ? PARENTS : PARENTS.filter(p => p.cat === activeCat);
+// ── D. UTILITY FUNCTIONS ──────────────────────────────────
+function pool(){
+  if(activeCat==="all") return ALL;
+  if(activeCat==="smartlock") return SMARTLOCKS;
+  if(activeCat==="threshold") return THRESHOLDS;
+  return ALL.filter(p=>p.cat===activeCat);
 }
 
-// sidx() — builds a searchable string from all text fields of a product
-// All values are lowercased so search is case-insensitive.
-// This is what doSearch() checks the query against.
-function sidx(p) {
-  return [
-    p.brand, p.bs, p.line, p.model, p.name, p.cat,
+function sidx(p){
+  return [p.brand,p.bs,p.line,p.model,p.name,p.cat,
     ...Object.values(p.fields),
-    ...(p.proprietary || []),
-    ...(p.exclusive || []),
-    ...p.variants.map(v => v.sku + " " + v.finish)
+    ...(p.proprietary||[]),
+    ...(p.exclusive||[]),
+    ...p.variants.map(v=>v.sku+" "+v.finish)
   ].join(" ").toLowerCase();
 }
 
-// brandColor() — returns the CSS variable for text color based on brand ownership
-// ASSA ABLOY = blue (info), Allegion/Schlage = amber (warning), others = green
-function brandColor(b) {
-  return b.includes("ASSA ABLOY") ? "var(--txtinfo)"
-       : b.includes("Allegion") || b.includes("Schlage") ? "var(--txtwarn)"
-       : "var(--txtsuccess)";
+function brandColor(b){
+  return b.includes("ASSA ABLOY")?"var(--txtinfo)":
+         b.includes("Allegion")||b.includes("Schlage")?"var(--txtwarn)":
+         "var(--txtsuccess)";
 }
-
-// brandBadge() — generates the HTML for the brand pill badge
-function brandBadge(b, bs) {
-  const cls = b.includes("ASSA ABLOY") ? "b-aa"
-            : b.includes("Allegion") || b.includes("Schlage") ? "b-al"
-            : "b-dk";
-  return `<span class="badge ${cls}">${bs}</span>`;
+function brandBadge(b,bs){
+  const cls=b.includes("ASSA ABLOY")?"b-aa":b.includes("Allegion")||b.includes("Schlage")?"b-al":"b-dk";
+  return`<span class="badge ${cls}">${bs}</span>`;
 }
-
-// catTag() — generates the small category tag (Cylinder or Closer)
-function catTag(c) {
-  return c === "cylinder"
-    ? `<span class="cat-tag cat-cyl">Cylinder</span>`
-    : `<span class="cat-tag cat-cls">Closer</span>`;
+function catTag(c){
+  return c==="cylinder" ?`<span class="cat-tag cat-cyl">Cylinder</span>`:
+         c==="closer"   ?`<span class="cat-tag cat-cls">Closer</span>`:
+         c==="threshold"?`<span class="cat-tag" style="background:#e1f0ff;color:#0c447c;font-size:10px;font-weight:500;padding:2px 7px;border-radius:4px;text-transform:uppercase;letter-spacing:.04em">Threshold</span>`:
+                         `<span class="cat-tag cat-slk">Smart lock</span>`;
 }
-
-// confBadge() — generates the match confidence badge (High/Partial/Not interchangeable)
-function confBadge(c) {
-  const cls = c === "High" ? "b-high" : c === "Incompatible" ? "b-incompat" : "b-partial";
-  const lbl = c === "High" ? "Direct equivalent"
-            : c === "Incompatible" ? "Not interchangeable"
-            : "Partial interchangeability";
-  return `<span class="badge ${cls}">${lbl}</span>`;
+function confBadge(c){
+  const cls=c==="High"?"b-high":c==="Incompatible"?"b-incompat":"b-partial";
+  const lbl=c==="High"?"Direct equivalent":c==="Incompatible"?"Not interchangeable":"Partial interchangeability";
+  return`<span class="badge ${cls}">${lbl}</span>`;
 }
-
-// barColor() — returns CSS color variable for the score bar and percentage text
-function barColor(pct) {
-  return pct >= 90 ? "var(--txtsuccess)" : pct >= 70 ? "var(--txtwarn)" : "var(--txtdanger)";
+function barColor(pct){return pct>=90?"var(--txtsuccess)":pct>=70?"var(--txtwarn)":"var(--txtdanger)";}
+function pips(w){
+  const f=w>=25?3:w>=12?2:1;
+  return`<div class="wt-pip">${[0,1,2].map(i=>`<div class="pip${i<f?" on":""}"></div>`).join("")}</div>`;
 }
-
-// pips() — generates the weight indicator dots for the diff table
-// 3 dots = high weight (≥25pts), 2 dots = medium (≥12pts), 1 dot = low
-function pips(w) {
-  const filled = w >= 25 ? 3 : w >= 12 ? 2 : 1;
-  return `<div class="wt-pip">${[0,1,2].map(i => `<div class="pip${i < filled ? " on" : ""}"></div>`).join("")}</div>`;
-}
-
-// tierLabel() — returns the display name for each scoring tier by category
-function tierLabel(cat, t) {
-  const labels = {
-    cylinder: { t1:"Functional core", t2:"Performance", t3:"Installation", t4:"Specification" },
-    closer:   { t1:"Functional core", t2:"Performance", t3:"Installation", t4:"Specification" }
+function tierLabel(cat,t){
+  const m={
+    cylinder: {t1:"Functional core",t2:"Performance",t3:"Installation",t4:"Specification"},
+    closer:   {t1:"Functional core",t2:"Performance",t3:"Installation",t4:"Specification"},
+    smartlock:{t1:"Connectivity",t2:"Access & security",t3:"Physical",t4:"Specification"},
+    threshold:{t1:"Functional core",t2:"Performance",t3:"Installation",t4:"Specification"}
   };
-  return labels[cat][t];
+  return (m[cat]||m.cylinder)[t]||t;
 }
 
+// ── E. SCORING ENGINE ────────────────────────────────────
+function calcScore(src,cmp){
+  const W = src.cat==="cylinder"?CW : src.cat==="closer"?LW : src.cat==="threshold"?TW : SW;
 
-/* ============================================================
-   G. SCORING ENGINE — calcScore()
-   ------------------------------------------------------------
-   Calculates the weighted match score between a source product
-   and a comparable product.
+  // Tier 1 — primary functional fields per category
+  const t1k = src.cat==="cylinder"
+    ? ["Type","Grade","Key control","IC format"]
+    : src.cat==="closer"
+    ? ["ANSI size","Mounting","Arm type","Fire rated"]
+    : src.cat==="threshold"
+    ? ["Profile type","Width","Height","Material","ADA compliant"]
+    : ["Lock type","Connectivity","Hub required","Smart home platforms"];
 
-   PROCESS:
-   1. Select the correct weight table (CW for cylinders, LW for closers)
-   2. Define which fields belong to which tier (t1–t4)
-   3. Loop through every field in the weight table
-   4. For each field: if values match, add weight to earned score
-   5. Track earned/max per tier for the breakdown cards
-   6. Calculate overall percentage and map to confidence label
+  // Tier 2 — performance fields per category
+  const t2k = src.cat==="cylinder"
+    ? ["Pins","Keyway"]
+    : src.cat==="closer"
+    ? ["Max door (lbs)","Max width (in)","Delayed","Backcheck"]
+    : src.cat==="threshold"
+    ? ["Fire rated","Thermal break","Seal type"]
+    : ["ANSI grade","Max codes","Key backup","Built-in alarm","Auto-lock","Activity log","Fire rating"];
 
-   SPECIAL CASE — numeric shortfall:
-   For Max door (lbs) and Max width (in), a mismatch where the
-   comparable has a LOWER value than the source is flagged differently
-   (red ✗ instead of amber) because it's a practical limitation,
-   not just a difference.
+  // Tier 3 — installation fields per category
+  const t3k = src.cat==="cylinder"
+    ? []
+    : src.cat==="closer"
+    ? ["Template"]
+    : src.cat==="threshold"
+    ? ["Slip resistant","Wall thickness"]
+    : ["Handing"];
 
-   RETURNS: { pct, conf, tiers, detail }
-     pct:    overall weighted percentage (0–100)
-     conf:   "High" | "Partial" | "Incompatible"
-     tiers:  { t1, t2, t3, t4 } each with { e (earned), m (max) }
-     detail: field-level breakdown for the diff table rows
-   ============================================================ */
-function calcScore(src, cmp) {
-  const W = src.cat === "cylinder" ? CW : LW;
+  const tierOf = k => t1k.includes(k)?"t1":t2k.includes(k)?"t2":t3k.includes(k)?"t3":"t4";
 
-  // Define which fields belong to which tier
-  const t1k = src.cat === "cylinder"
-    ? ["Type", "Grade", "Key control", "IC format"]        // Cylinder functional core
-    : ["ANSI size", "Mounting", "Arm type", "Fire rated"]; // Closer functional core
-  const t2k = src.cat === "cylinder"
-    ? ["Pins", "Keyway"]                                   // Cylinder performance
-    : ["Max door (lbs)", "Max width (in)", "Delayed", "Backcheck"]; // Closer performance
-  const t3k = src.cat === "cylinder" ? [] : ["Template"];  // Closer installation only
+  const tiers={t1:{e:0,m:0},t2:{e:0,m:0},t3:{e:0,m:0},t4:{e:0,m:0}};
+  let te=0, tm=0;
+  const detail={};
 
-  const tierOf = k => t1k.includes(k) ? "t1" : t2k.includes(k) ? "t2" : t3k.includes(k) ? "t3" : "t4";
+  Object.keys(W).forEach(k=>{
+    const w=W[k];
+    const sk=Object.keys(src.fields).find(f=>f.toLowerCase()===k.toLowerCase())||k;
+    const ck=Object.keys(cmp.fields).find(f=>f.toLowerCase()===k.toLowerCase())||k;
+    const sv=src.fields[sk], cv=cmp.fields[ck];
+    if(sv===undefined||cv===undefined) return;
 
-  const tiers = { t1:{e:0,m:0}, t2:{e:0,m:0}, t3:{e:0,m:0}, t4:{e:0,m:0} };
-  let totalEarned = 0, totalMax = 0;
-  const detail = {};
+    const match=sv===cv;
+    const numLow=["Max door (lbs)","Max width (in)"].includes(k)&&!match&&parseFloat(cv)<parseFloat(sv);
+    // For smart locks, flag when comparable has notably fewer codes
+    const codeLow=k==="Max codes"&&!match&&parseInt(cv)<parseInt(sv);
 
-  Object.keys(W).forEach(k => {
-    const w = W[k];
-    const sv = src.fields[k];  // source (selected product) value
-    const cv = cmp.fields[k];  // comparable value
-    if (sv === undefined || cv === undefined) return; // skip if field not on both products
-
-    const match = sv === cv;
-    // numLow: true if this is a numeric capacity field where comparable is lower than source
-    const numLow = ["Max door (lbs)", "Max width (in)"].includes(k)
-                && !match
-                && parseFloat(cv) < parseFloat(sv);
-
-    const t = tierOf(k);
-    tiers[t].m += w;
-    totalMax    += w;
-    if (match) { tiers[t].e += w; totalEarned += w; }
-
-    detail[k] = { w, match, numLow, sv, cv, tier:t };
+    const t=tierOf(k);
+    tiers[t].m+=w; tm+=w;
+    if(match){tiers[t].e+=w; te+=w;}
+    detail[k]={w,match,numLow,codeLow,sv,cv,tier:t};
   });
 
-  const pct  = totalMax > 0 ? Math.round((totalEarned / totalMax) * 100) : 0;
-  const conf = pct >= 90 ? "High" : pct >= 70 ? "Partial" : "Incompatible";
-
-  return { pct, conf, tiers, detail };
+  const pct=tm>0?Math.round((te/tm)*100):0;
+  const conf=pct>=90?"High":pct>=70?"Partial":"Incompatible";
+  return{pct,conf,tiers,detail};
 }
 
-
-/* ============================================================
-   H. SEARCH LOGIC — doSearch()
-   ------------------------------------------------------------
-   Called by the Search button and Enter key.
-
-   1. Read the query from the input field
-   2. Filter pool() using sidx() — checks if query appears
-      anywhere in the product's combined searchable text
-   3. Render matching products as clickable rows in #searchResults
-   ============================================================ */
-function doSearch() {
-  const q    = document.getElementById("qi").value.trim().toLowerCase();
-  const area = document.getElementById("searchResults");
-
-  if (!q) { area.innerHTML = ""; return; }
-
-  const hits = pool().filter(p => sidx(p).includes(q));
-
-  if (!hits.length) {
-    area.innerHTML = `<div class="empty">No products matched "<strong>${q}</strong>". Try a broader term.</div>`;
+// ── F. SEARCH ─────────────────────────────────────────────
+function doSearch(){
+  const q=document.getElementById("qi").value.trim().toLowerCase();
+  const area=document.getElementById("searchResults");
+  if(!q){area.innerHTML="";return;}
+  const hits=pool().filter(p=>sidx(p).includes(q));
+  if(!hits.length){
+    area.innerHTML=`<div class="empty">No products matched "<strong>${q}</strong>". Try a broader term or switch category.</div>`;
     return;
   }
-
-  area.innerHTML =
-    `<p class="slabel">${hits.length} product${hits.length !== 1 ? "s" : ""} found — select yours to see comparables</p>` +
-    hits.map(p => {
-      // Summary metadata shown on the right side of each result row
-      const meta = p.cat === "cylinder"
-        ? `${p.fields.Type} · ${p.fields["Key control"]}`
-        : `${p.fields.Mounting} · Size ${p.fields["ANSI size"]}`;
-
-      // Small tags shown if the product has proprietary features or exclusive variants
-      const propTag = p.proprietary && p.proprietary.length
-        ? `<span class="badge b-prop">Proprietary features</span>` : "";
-      const exclTag = p.exclusive && p.exclusive.length
-        ? `<span class="badge" style="background:var(--bgprop);color:var(--txtprop);font-size:10px">Exclusive options</span>` : "";
-
-      return `<div class="result-row" onclick="selectProduct('${p.id}')">
+  area.innerHTML=`<p class="slabel">${hits.length} product${hits.length!==1?"s":""} found — select yours to see comparables</p>`
+    +hits.map(p=>{
+      const meta=p.cat==="cylinder" ?`${p.fields.Type} · ${p.fields["Key control"]}`:
+                 p.cat==="closer"   ?`${p.fields.Mounting} · Size ${p.fields["ANSI size"]}`:
+                 p.cat==="threshold"?`${p.fields["Profile type"]} · ${p.fields.Width} wide`:
+                                     `${p.fields.Connectivity} · ${p.fields["Lock type"]}`;
+      const propTag=p.proprietary?.length?`<span class="badge b-prop" style="font-size:10px">Proprietary</span>`:"";
+      const exclTag=p.exclusive?.length?`<span class="badge b-connect" style="font-size:10px">Exclusives</span>`:"";
+      return`<div class="result-row" onclick="selectProduct('${p.id}')">
         <div style="flex:1;min-width:0">
           <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:3px">
             ${catTag(p.cat)}
@@ -1494,101 +689,82 @@ function doSearch() {
       </div>`;
     }).join("");
 }
+document.getElementById("qi").addEventListener("keydown",e=>{if(e.key==="Enter")doSearch();});
 
-
-/* ============================================================
-   I. PRODUCT SELECTION — selectProduct()
-   ------------------------------------------------------------
-   Called when a user clicks a result row.
-
-   1. Store the selected product in the `selected` variable
-   2. Hide Step 1, show Step 2
-   3. Update the step indicator bar classes
-   4. Scroll to top (so the user sees the comparison from the start)
-   5. Call renderComparables() to build the comparison view
-   ============================================================ */
-function selectProduct(id) {
-  selected = IDX[id];
-  document.getElementById("step1").style.display = "none";
-  document.getElementById("step2").style.display = "block";
-  document.getElementById("s1").className = "step done";
-  document.getElementById("s2").className = "step active";
-  window.scrollTo({ top: 0, behavior: "smooth" });
-  variantOpen = {}; // reset all variant drawers when a new product is selected
+// ── G. SELECTION & RENDERING ──────────────────────────────
+function selectProduct(id){
+  selected=IDX[id]; variantOpen={};
+  document.getElementById("step1").style.display="none";
+  document.getElementById("step2").style.display="block";
+  document.getElementById("s1").className="step done";
+  document.getElementById("s2").className="step active";
+  window.scrollTo({top:0,behavior:"smooth"});
   renderComparables();
 }
 
+function toggleVariants(id){
+  variantOpen[id]=!variantOpen[id];
+  const body=document.getElementById("vb-"+id);
+  const btn =document.getElementById("vt-"+id);
+  if(body) body.classList.toggle("open",variantOpen[id]);
+  if(btn)  btn.textContent=variantOpen[id]
+    ?"Hide variants ↑"
+    :"Show variants ("+IDX[id].variants.length+") ↓";
+}
 
-/* ============================================================
-   J. COMPARISON RENDERING — renderComparables()
-   ------------------------------------------------------------
-   Builds the full comparison view for Step 2.
+function renderComparables(){
+  const src=selected;
+  const scored=src.xref.map(id=>IDX[id]).filter(Boolean)
+    .map(c=>({...c,score:calcScore(src,c)}))
+    .sort((a,b)=>b.score.pct-a.score.pct);
 
-   For each cross-referenced product:
-   1. Calculate the weighted score vs. the selected product
-   2. Sort comparables by score (highest first)
-   3. For each comparable, build:
-      - Brand badge + product name/model
-      - Confidence badge + percentage
-      - Score bar
-      - Tier breakdown grid (4 cards)
-      - Caution box (if applicable)
-      - Proprietary flags row (if applicable)
-      - Exclusive features row (if applicable)
-      - Spec diff table with weight pips
-      - Variant drawer (collapsible)
-
-   The entire output is built as an HTML string and written to
-   #compResults via innerHTML. This is fast and avoids needing
-   a UI framework.
-   ============================================================ */
-function renderComparables() {
-  const src = selected;
-
-  // Score and sort comparables
-  const scored = src.xref
-    .map(id => IDX[id])
-    .filter(Boolean)
-    .map(c => ({ ...c, score: calcScore(src, c) }))
-    .sort((a, b) => b.score.pct - a.score.pct);
-
-  // Tooltip for the "Selected product" column header in the diff table
-  // Uses CSS hover — no JS needed for show/hide
-  const tooltip = `<div class="iw">
+  const tooltip=`<div class="iw">
     <span style="font-size:10px;font-weight:500;color:var(--txt2);text-transform:uppercase;letter-spacing:.05em">Selected product</span>
     <span class="iico">i</span>
-    <div class="tip">
-      <div class="tn">${src.name}</div>
-      <div class="ts">${src.model}</div>
-    </div>
+    <div class="tip"><div class="tn">${src.name}</div><div class="ts">${src.model}</div></div>
   </div>`;
 
-  document.getElementById("compResults").innerHTML =
-    `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
-      <p class="slabel" style="margin-bottom:0">${scored.length} comparable${scored.length !== 1 ? "s" : ""}</p>
-      <button class="change-btn" onclick="goBack()">← Change product</button>
-    </div>` +
-    scored.map(r => {
-      const { pct, conf, tiers, detail } = r.score;
-      const col = barColor(pct);
+  const srcMeta = src.cat==="cylinder"  ? `${src.fields.Type} · ${src.fields["Key control"]}` :
+                  src.cat==="closer"    ? `${src.fields.Mounting} · Size ${src.fields["ANSI size"]}` :
+                  src.cat==="threshold" ? `${src.fields["Profile type"]} · ${src.fields.Width} wide` :
+                                          `${src.fields.Connectivity} · ${src.fields["Lock type"]}`;
 
-      // ── Tier breakdown cards
-      const tierCards = ["t1","t2","t3","t4"].map(t => {
-        if (tiers[t].m === 0) return ""; // skip tiers with no applicable fields
-        const tp  = Math.round((tiers[t].e / tiers[t].m) * 100);
-        const cls = tp >= 90 ? "good" : tp >= 70 ? "mid" : "low";
-        return `<div class="tier-card">
-          <div class="tier-label">${tierLabel(src.cat, t)}</div>
+  document.getElementById("compResults").innerHTML=
+    `<div class="selected-bar">
+      <div class="selected-bar-left">
+        <div style="flex-shrink:0">${brandBadge(src.brand,src.bs)}</div>
+        <div style="min-width:0">
+          <div class="selected-bar-label">Selected product</div>
+          <div class="selected-bar-name">${src.name}</div>
+          <div style="font-size:11px;color:var(--txt2);margin-top:1px">${src.model} &nbsp;·&nbsp; ${srcMeta}</div>
+        </div>
+      </div>
+      <button class="change-btn" onclick="goBack()">← Change product</button>
+    </div>
+    <p class="slabel" style="margin-bottom:.75rem">${scored.length} comparable${scored.length!==1?"s":""}</p>`+
+    scored.map(r=>{
+      const{pct,conf,tiers,detail}=r.score;
+      const col=barColor(pct);
+
+      const tierCards=["t1","t2","t3","t4"].map(t=>{
+        if(tiers[t].m===0)return"";
+        const tp=Math.round((tiers[t].e/tiers[t].m)*100);
+        const cls=tp>=90?"good":tp>=70?"mid":"low";
+        return`<div class="tier-card">
+          <div class="tier-label">${tierLabel(src.cat,t)}</div>
           <div class="tier-score ${cls}">${tp}%</div>
           <div class="tier-sub">${tiers[t].e.toFixed(0)} / ${tiers[t].m.toFixed(0)} pts</div>
         </div>`;
       }).join("");
 
-      // ── Diff table rows — one per scored field
-      const rows = Object.entries(detail).map(([k, d]) => {
-        const cls  = d.numLow ? "vbad" : d.match ? "vsame" : "vdiff";
-        const tick = d.match ? " ✓" : d.numLow ? " ✗" : "";
-        return `<tr>
+      const rows=Object.entries(detail).map(([k,d])=>{
+        // For smart locks, highlight when comparable has MORE codes (good) or fewer (bad)
+        const isCodeField=k==="Max codes";
+        const compVal=parseInt(d.cv), srcVal=parseInt(d.sv);
+        const codeAdv=isCodeField&&!isNaN(compVal)&&!isNaN(srcVal)&&compVal>srcVal;
+        const cls=d.numLow?"vbad":d.codeLow?"vbad":codeAdv?"vgood":d.match?"vsame":"vdiff";
+        const tick=d.match?" ✓":d.numLow||d.codeLow?" ✗":codeAdv?" ↑":"";
+        return`<tr>
           <td class="fld">${k}</td>
           <td class="wt">${pips(d.w)}</td>
           <td class="tv">${d.cv}</td>
@@ -1596,36 +772,28 @@ function renderComparables() {
         </tr>`;
       }).join("");
 
-      // ── Caution box (amber) — shown if caution string exists
-      const cautionHtml = r.caution
-        ? `<div class="caution-box"><strong>Note:</strong> ${r.caution}</div>` : "";
+      const cautionHtml=r.caution?`<div class="caution-box"><strong>Note:</strong> ${r.caution}</div>`:"";
 
-      // ── Proprietary row (purple) — lists brand-proprietary features
-      const propHtml = (r.proprietary && r.proprietary.length)
-        ? `<div class="prop-row">
-            <span class="badge b-prop" style="flex-shrink:0">Proprietary</span>
-            <span class="prop-row-txt">${r.proprietary.join(" &nbsp;·&nbsp; ")}</span>
-           </div>` : "";
+      const propHtml=(r.proprietary?.length)?
+        `<div class="prop-row" style="background:var(--bgprop)">
+          <span class="badge b-prop" style="flex-shrink:0">Proprietary</span>
+          <span class="prop-row-txt" style="color:var(--txtprop)">${r.proprietary.join(" &nbsp;·&nbsp; ")}</span>
+        </div>`:"";
 
-      // ── Exclusive row (purple) — lists finishes/options not available from competitor
-      const exclHtml = (r.exclusive && r.exclusive.length)
-        ? `<div class="prop-row">
-            <span class="badge" style="background:var(--bgprop);color:var(--txtprop);font-size:10px;font-weight:500;flex-shrink:0;border:0.5px solid var(--txtprop);border-radius:99px;padding:3px 8px">Exclusive</span>
-            <span class="prop-row-txt" style="color:var(--txtprop)">
-              <strong>Not available from competitor brands:</strong> ${r.exclusive.join(", ")}
-            </span>
-           </div>` : "";
+      const exclHtml=(r.exclusive?.length)?
+        `<div class="prop-row" style="background:var(--bgconnect)">
+          <span class="badge b-connect" style="flex-shrink:0;border:0.5px solid var(--txtconnect);border-radius:99px;padding:3px 8px">Exclusive</span>
+          <span class="prop-row-txt" style="color:var(--txtconnect)">
+            <strong>Not available from selected brand:</strong> ${r.exclusive.join(", ")}
+          </span>
+        </div>`:"";
 
-      // ── Variant chips — one per variant in r.variants[]
-      // excl:true variants get the .excl class (purple styling)
-      const varChips = r.variants.map(v => {
-        const note = v.note ? ` <span style="font-weight:400;font-size:10px">(${v.note})</span>` : "";
-        return `<span class="variant-chip${v.excl ? " excl" : ""}">${v.finish}${v.excl ? " ★" : ""}${note}</span>`;
+      const varChips=r.variants.map(v=>{
+        const note=v.note?` <span style="font-weight:400;font-size:10px">(${v.note})</span>`:"";
+        return`<span class="variant-chip${v.excl?" excl":""}">${v.finish}${v.excl?" ★":""}${note}</span>`;
       }).join("");
 
-      // ── Variant drawer — collapsible section showing all SKU variants
-      // Toggle state managed by variantOpen{} and toggleVariants()
-      const varSection = `<div class="variants-section">
+      const varSection=`<div class="variants-section">
         <button class="variants-toggle" id="vt-${r.id}" onclick="toggleVariants('${r.id}')">
           Show variants (${r.variants.length}) ↓
         </button>
@@ -1635,11 +803,10 @@ function renderComparables() {
         </div>
       </div>`;
 
-      // ── Assemble the full comparable card
-      return `<div class="comp-card">
+      return`<div class="comp-card">
         <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:1rem">
           <div style="min-width:0">
-            ${brandBadge(r.brand, r.bs)}
+            ${brandBadge(r.brand,r.bs)}
             <div style="font-size:14px;font-weight:500;color:var(--txt);margin-top:4px">${r.name}</div>
             <div style="font-size:11px;font-family:var(--mono);color:var(--txt2);margin-top:2px">${r.model}</div>
           </div>
@@ -1648,13 +815,9 @@ function renderComparables() {
             <span style="font-size:13px;font-weight:500;color:${col}">${pct}% weighted match</span>
           </div>
         </div>
-        <div class="score-bar-track">
-          <div class="score-bar-fill" style="width:${pct}%;background:${col}"></div>
-        </div>
+        <div class="score-bar-track"><div class="score-bar-fill" style="width:${pct}%;background:${col}"></div></div>
         <div class="tier-grid">${tierCards}</div>
-        ${cautionHtml}
-        ${propHtml}
-        ${exclHtml}
+        ${cautionHtml}${propHtml}${exclHtml}
         <table class="diff-table">
           <thead><tr>
             <th style="width:130px"></th>
@@ -1669,67 +832,25 @@ function renderComparables() {
     }).join("");
 }
 
-
-/* ============================================================
-   J. VARIANT DRAWER TOGGLE — toggleVariants()
-   ------------------------------------------------------------
-   Called by the "Show variants" button inside each comp card.
-   Toggles the open/closed state of a specific product's drawer.
-
-   variantOpen is an object keyed by product id.
-   The .open class on .variants-body controls visibility (CSS).
-   Button text updates to reflect current state.
-   ============================================================ */
-function toggleVariants(id) {
-  variantOpen[id] = !variantOpen[id];
-  const body = document.getElementById("vb-" + id);
-  const btn  = document.getElementById("vt-" + id);
-  if (body) body.classList.toggle("open", variantOpen[id]);
-  if (btn)  btn.textContent = variantOpen[id]
-    ? "Hide variants ↑"
-    : "Show variants (" + IDX[id].variants.length + ") ↓";
+function goBack(){
+  selected=null;
+  document.getElementById("step1").style.display="block";
+  document.getElementById("step2").style.display="none";
+  document.getElementById("s1").className="step active";
+  document.getElementById("s2").className="step";
+  window.scrollTo({top:0,behavior:"smooth"});
 }
 
-
-/* ============================================================
-   K. NAVIGATION
-   ============================================================ */
-
-// goBack() — returns from Step 2 to Step 1
-// Resets selected product, restores Step 1 visibility,
-// resets step indicator, and scrolls to top.
-function goBack() {
-  selected = null;
-  document.getElementById("step1").style.display = "block";
-  document.getElementById("step2").style.display = "none";
-  document.getElementById("s1").className = "step active";
-  document.getElementById("s2").className = "step";
-  window.scrollTo({ top: 0, behavior: "smooth" });
+function setCat(cat){
+  activeCat=cat;
+  document.getElementById("cat-all").classList.toggle("active",cat==="all");
+  document.getElementById("cat-cyl").classList.toggle("active",cat==="cylinder");
+  document.getElementById("cat-cls").classList.toggle("active",cat==="closer");
+  document.getElementById("cat-slk").classList.toggle("active",cat==="smartlock");
+  document.getElementById("cat-thr").classList.toggle("active",cat==="threshold");
+  document.getElementById("hintText").innerHTML=HINTS[cat]||HINTS.all;
+  document.getElementById("searchResults").innerHTML="";
 }
-
-// setCat() — updates the active category filter
-// Toggles .active class on the three category buttons,
-// updates the hint text, and clears current search results.
-function setCat(cat) {
-  activeCat = cat;
-  document.getElementById("cat-all").classList.toggle("active", cat === "all");
-  document.getElementById("cat-cyl").classList.toggle("active", cat === "cylinder");
-  document.getElementById("cat-cls").classList.toggle("active", cat === "closer");
-  document.getElementById("hintText").innerHTML = HINTS[cat];
-  document.getElementById("searchResults").innerHTML = "";
-}
-
-
-/* ============================================================
-   L. KEYBOARD LISTENER
-   ------------------------------------------------------------
-   Allows the user to trigger search by pressing Enter in the
-   search input, rather than having to click the button.
-   ============================================================ */
-document.getElementById("qi").addEventListener("keydown", e => {
-  if (e.key === "Enter") doSearch();
-});
-
 </script>
 </body>
 </html>

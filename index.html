@@ -73,8 +73,8 @@
 
     .result-row { display:flex; align-items:center; gap:12px; padding:10px 14px; border-radius:var(--r-md); border:0.5px solid var(--bdr); background:var(--bg); margin-bottom:6px; cursor:pointer; transition:border-color .15s, background .15s; }
     .result-row:hover { border-color:var(--bdr3); background:var(--bg2); }
-    .rr-name { font-size:13px; font-weight:500; color:var(--txt); }
-    .rr-sku  { font-size:11px; font-family:var(--mono); color:var(--txt2); margin-top:1px; }
+    .rr-model { font-size:15px; font-weight:600; color:var(--txt); letter-spacing:-.01em; line-height:1.2; margin-bottom:2px; }
+    .rr-name  { font-size:13px; color:var(--txt); margin-bottom:0; }
 
     .comp-card { background:var(--bg); border:0.5px solid var(--bdr); border-radius:var(--r-lg); padding:1.25rem; margin-bottom:.75rem; }
 
@@ -428,7 +428,7 @@ const THRESHOLDS = [
             "Seal type":"None standard",
             "Slip resistant":"Yes — SIA option","Wall thickness":".125\"",
             "Finish":"Mill, DKB, SIA","Alloy":"6063-T5"},
-   xref:["t7"],caution:null,
+   xref:["t7","t13"],caution:null,
    proprietary:["SIA slip-resistant — nickel/titanium embedded surface, aircraft carrier origin"],
    exclusive:["Architectural Bronze (413BR)","Stainless Steel (413SS)","Smooth surface variant (434)"],
    variants:[
@@ -451,7 +451,7 @@ const THRESHOLDS = [
             "Seal type":"None standard",
             "Slip resistant":"Yes — SIA option","Wall thickness":".125\"",
             "Finish":"Mill, DKB, SIA","Alloy":"6063-T5"},
-   xref:["t8"],caution:null,
+   xref:["t8","t14"],caution:null,
    proprietary:["SIA slip-resistant finish"],
    exclusive:["Stainless Steel (513SS)","Smooth surface variant (435)","Heavy duty variant (513HD)"],
    variants:[
@@ -473,7 +473,7 @@ const THRESHOLDS = [
             "Seal type":"None standard",
             "Slip resistant":"Yes — SIA option","Wall thickness":".125\"",
             "Finish":"Mill, DKB, SIA","Alloy":"6063-T5"},
-   xref:["t9"],caution:null,
+   xref:["t9","t15"],caution:null,
    proprietary:["SIA slip-resistant finish"],
    exclusive:["Stainless Steel (613SS)","Smooth surface variant (436)","Heavy duty variant (613HD)"],
    variants:[
@@ -495,7 +495,7 @@ const THRESHOLDS = [
             "Seal type":"None standard",
             "Slip resistant":"Yes — SIA option","Wall thickness":".125\"",
             "Finish":"Mill, DKB, SIA","Alloy":"6063-T5"},
-   xref:["t10"],caution:null,
+   xref:["t10","t16"],caution:null,
    proprietary:["SIA slip-resistant finish"],
    exclusive:["Stainless Steel (713SS)","Smooth surface variant (437)"],
    variants:[
@@ -517,7 +517,7 @@ const THRESHOLDS = [
             "Seal type":"None standard",
             "Slip resistant":"Yes — SIA option","Wall thickness":".125\"",
             "Finish":"Mill, DKB, SIA","Alloy":"6063-T5"},
-   xref:["t11"],caution:null,
+   xref:["t11","t17"],caution:null,
    proprietary:["SIA slip-resistant finish"],
    exclusive:["Stainless Steel (813SS)","Smooth surface variant (438)"],
    variants:[
@@ -561,7 +561,7 @@ const THRESHOLDS = [
             "Seal type":"None standard",
             "Slip resistant":"Yes — PemKote (10-yr warranty)","Wall thickness":"Standard",
             "Finish":"A, AK, BDG, D, C","Alloy":"Aluminum extrusion"},
-   xref:["t1"],caution:null,
+   xref:["t1","t13"],caution:null,
    proprietary:["PemKote abrasive slip-resistant surface — 10-year warranty"],
    exclusive:["AK Non-Slip (PemKote)","C Clear Anodized","D Dark Bronze — broader finish range than NGP"],
    variants:[
@@ -582,7 +582,7 @@ const THRESHOLDS = [
             "Seal type":"None standard",
             "Slip resistant":"Yes — PemKote (10-yr warranty)","Wall thickness":"Standard",
             "Finish":"A, AK, BDG, D, C","Alloy":"Aluminum extrusion"},
-   xref:["t2"],caution:null,
+   xref:["t2","t14"],caution:null,
    proprietary:["PemKote abrasive slip-resistant surface — 10-year warranty"],
    exclusive:["C Clear Anodized","D Dark Bronze"],
    variants:[
@@ -603,7 +603,7 @@ const THRESHOLDS = [
             "Seal type":"None standard",
             "Slip resistant":"Yes — PemKote (10-yr warranty)","Wall thickness":"Standard",
             "Finish":"A, AK, BDG, D, C","Alloy":"Aluminum extrusion"},
-   xref:["t3"],caution:null,
+   xref:["t3","t15"],caution:null,
    proprietary:["PemKote abrasive slip-resistant surface — 10-year warranty"],
    exclusive:["C Clear Anodized","D Dark Bronze"],
    variants:[
@@ -624,7 +624,7 @@ const THRESHOLDS = [
             "Seal type":"None standard",
             "Slip resistant":"Yes — PemKote (10-yr warranty)","Wall thickness":"Standard",
             "Finish":"A, AK, BDG, D, C","Alloy":"Aluminum extrusion"},
-   xref:["t4"],caution:null,
+   xref:["t4","t16"],caution:null,
    proprietary:["PemKote abrasive slip-resistant surface — 10-year warranty"],
    exclusive:["C Clear Anodized","D Dark Bronze"],
    variants:[
@@ -645,7 +645,7 @@ const THRESHOLDS = [
             "Seal type":"None standard",
             "Slip resistant":"Yes — PemKote (10-yr warranty)","Wall thickness":"Standard",
             "Finish":"A, AK, BDG, D, C","Alloy":"Aluminum extrusion"},
-   xref:["t5"],caution:null,
+   xref:["t5","t17"],caution:null,
    proprietary:["PemKote abrasive slip-resistant surface — 10-year warranty"],
    exclusive:["C Clear Anodized","D Dark Bronze"],
    variants:[
@@ -674,6 +674,125 @@ const THRESHOLDS = [
      {sku:"1715A",  finish:"Mill Aluminum (A)",     excl:false},
      {sku:"1715AK", finish:"Non-Slip PemKote (AK)", excl:false},
      {sku:"1715D",  finish:"Dark Bronze (D)",       excl:false},
+   ]},
+
+  // ── ZERO (ALLEGION) EQUIVALENTS ────────────────────────────────
+  // SOURCE: NGP Zero-to-NGP Cross Reference (NGP-ZER-GEN-CRF-1025-A)
+  // Zero is an Allegion brand — same parent as Schlage, LCN, Von Duprin
+  // Zero finish: A=Mill, BK=DarkBronze, D=DarkBronze, AA=ClearAnodized, B=Bronze
+  // Zero exclusives: EBF double seal, Compress-O-Matic®, V3 fill, E/EL epoxy tread
+
+  // ── PAIR 1 ZERO: 4" SADDLE ────────────────────────────────────
+  // Cross-ref source: Zero 544 = NGP 413, 434
+  {id:"t13",cat:"threshold",brand:"Allegion (Zero)",bs:"Zero",
+   line:"Saddle Thresholds",model:"544",
+   name:"Saddle Threshold — 4\" Wide, 1/4\" Rise",
+   fields:{"Profile type":"Saddle","Width":"4\"","Height":"1/4\"",
+            "Material":"Aluminum — heavy gauge","ADA compliant":"Yes",
+            "Fire rated":"Yes — UL10C","Thermal break":"No",
+            "Seal type":"None standard",
+            "Slip resistant":"Yes — E epoxy abrasive option","Wall thickness":"Heavy gauge",
+            "Finish":"A, BK, D, AA, B","Alloy":"Aluminum extrusion — heavy gauge"},
+   xref:["t1","t7"],
+   caution:"Zero uses heavier gauge aluminum than NGP/Pemko — can be drilled directly into concrete without buckling.",
+   proprietary:["EBF Extruded Bulb/Finger double-seal neoprene gasket","Compress-O-Matic® compressing top seal","V3 full body strength fill (aluminum oxide/silicon carbide)"],
+   exclusive:["E epoxy abrasive tread (non-slip, CoF 1.02 dry/0.98 wet)","EL photoluminescent epoxy tread (exit path marking)","V3 composite fill for ultra-heavy traffic","Heavy-gauge concrete-direct installation","AA Clear Anodized finish"],
+   variants:[
+     {sku:"544A",   finish:"Mill Aluminum (A)",          excl:false},
+     {sku:"544BK",  finish:"Dark Bronze Anodized (BK)",  excl:false},
+     {sku:"544D",   finish:"Dark Bronze Anodized (D)",   excl:false},
+     {sku:"544E",   finish:"+ Epoxy Abrasive Tread (E)", excl:true},
+     {sku:"544EL",  finish:"+ Photoluminescent Tread (EL)",excl:true},
+     {sku:"544V3",  finish:"+ Full Body Strength Fill (V3)",excl:true},
+     {sku:"8644A",  finish:"Variant 8644 — Mill Aluminum",excl:false},
+   ]},
+
+  // ── PAIR 2 ZERO: 5" SADDLE ────────────────────────────────────
+  // Cross-ref source: Zero 545 = NGP 513, 435
+  {id:"t14",cat:"threshold",brand:"Allegion (Zero)",bs:"Zero",
+   line:"Saddle Thresholds",model:"545",
+   name:"Saddle Threshold — 5\" Wide, 1/4\" Rise",
+   fields:{"Profile type":"Saddle","Width":"5\"","Height":"1/4\"",
+            "Material":"Aluminum — heavy gauge","ADA compliant":"Yes",
+            "Fire rated":"Yes — UL10C","Thermal break":"No",
+            "Seal type":"None standard",
+            "Slip resistant":"Yes — E epoxy abrasive option","Wall thickness":"Heavy gauge",
+            "Finish":"A, BK, D, AA, B","Alloy":"Aluminum extrusion — heavy gauge"},
+   xref:["t2","t8"],
+   caution:"Zero heavier gauge — can drill directly into concrete. Confirm spec allows aluminum vs. cast alternatives.",
+   proprietary:["EBF double-seal neoprene gasket","Compress-O-Matic®","V3 full body strength fill"],
+   exclusive:["E epoxy abrasive tread","EL photoluminescent tread","V3 composite fill","Heavy-gauge concrete-direct installation"],
+   variants:[
+     {sku:"545A",   finish:"Mill Aluminum (A)",          excl:false},
+     {sku:"545BK",  finish:"Dark Bronze Anodized (BK)",  excl:false},
+     {sku:"545E",   finish:"+ Epoxy Abrasive Tread (E)", excl:true},
+     {sku:"545EL",  finish:"+ Photoluminescent Tread (EL)",excl:true},
+     {sku:"545V3",  finish:"+ Full Body Strength Fill (V3)",excl:true},
+     {sku:"8654A",  finish:"Variant 8654 — Mill Aluminum",excl:false},
+   ]},
+
+  // ── PAIR 3 ZERO: 6" SADDLE ────────────────────────────────────
+  // Cross-ref source: Zero 546 = NGP 613, 436
+  {id:"t15",cat:"threshold",brand:"Allegion (Zero)",bs:"Zero",
+   line:"Saddle Thresholds",model:"546",
+   name:"Saddle Threshold — 6\" Wide, 1/4\" Rise",
+   fields:{"Profile type":"Saddle","Width":"6\"","Height":"1/4\"",
+            "Material":"Aluminum — heavy gauge","ADA compliant":"Yes",
+            "Fire rated":"Yes — UL10C","Thermal break":"No",
+            "Seal type":"None standard",
+            "Slip resistant":"Yes — E epoxy abrasive option","Wall thickness":"Heavy gauge",
+            "Finish":"A, BK, D, AA, B","Alloy":"Aluminum extrusion — heavy gauge"},
+   xref:["t3","t9"],caution:null,
+   proprietary:["EBF double-seal neoprene gasket","Compress-O-Matic®","V3 full body strength fill"],
+   exclusive:["E epoxy abrasive tread","EL photoluminescent tread","V3 composite fill"],
+   variants:[
+     {sku:"546A",   finish:"Mill Aluminum (A)",          excl:false},
+     {sku:"546BK",  finish:"Dark Bronze Anodized (BK)",  excl:false},
+     {sku:"546E",   finish:"+ Epoxy Abrasive Tread (E)", excl:true},
+     {sku:"546V3",  finish:"+ Full Body Strength Fill (V3)",excl:true},
+     {sku:"8664A",  finish:"Variant 8664 — Mill Aluminum",excl:false},
+   ]},
+
+  // ── PAIR 4 ZERO: 7" SADDLE ────────────────────────────────────
+  // Cross-ref source: Zero 547 = NGP 713, 437
+  {id:"t16",cat:"threshold",brand:"Allegion (Zero)",bs:"Zero",
+   line:"Saddle Thresholds",model:"547",
+   name:"Saddle Threshold — 7\" Wide, 1/4\" Rise",
+   fields:{"Profile type":"Saddle","Width":"7\"","Height":"1/4\"",
+            "Material":"Aluminum — heavy gauge","ADA compliant":"Yes",
+            "Fire rated":"Yes — UL10C","Thermal break":"No",
+            "Seal type":"None standard",
+            "Slip resistant":"Yes — E epoxy abrasive option","Wall thickness":"Heavy gauge",
+            "Finish":"A, BK, D, AA, B","Alloy":"Aluminum extrusion — heavy gauge"},
+   xref:["t4","t10"],caution:null,
+   proprietary:["EBF double-seal neoprene gasket","Compress-O-Matic®","V3 full body strength fill"],
+   exclusive:["E epoxy abrasive tread","EL photoluminescent tread","V3 composite fill"],
+   variants:[
+     {sku:"547A",   finish:"Mill Aluminum (A)",          excl:false},
+     {sku:"547BK",  finish:"Dark Bronze Anodized (BK)",  excl:false},
+     {sku:"547E",   finish:"+ Epoxy Abrasive Tread (E)", excl:true},
+     {sku:"547V3",  finish:"+ Full Body Strength Fill (V3)",excl:true},
+   ]},
+
+  // ── PAIR 5 ZERO: 8" SADDLE ────────────────────────────────────
+  // Cross-ref source: Zero 548 = NGP 813, 438
+  {id:"t17",cat:"threshold",brand:"Allegion (Zero)",bs:"Zero",
+   line:"Saddle Thresholds",model:"548",
+   name:"Saddle Threshold — 8\" Wide, 1/4\" Rise",
+   fields:{"Profile type":"Saddle","Width":"8\"","Height":"1/4\"",
+            "Material":"Aluminum — heavy gauge","ADA compliant":"Yes",
+            "Fire rated":"Yes — UL10C","Thermal break":"No",
+            "Seal type":"None standard",
+            "Slip resistant":"Yes — E epoxy abrasive option","Wall thickness":"Heavy gauge",
+            "Finish":"A, BK, D, AA, B","Alloy":"Aluminum extrusion — heavy gauge"},
+   xref:["t5","t11"],caution:null,
+   proprietary:["EBF double-seal neoprene gasket","Compress-O-Matic®","V3 full body strength fill"],
+   exclusive:["E epoxy abrasive tread","EL photoluminescent tread","V3 composite fill"],
+   variants:[
+     {sku:"548A",   finish:"Mill Aluminum (A)",          excl:false},
+     {sku:"548BK",  finish:"Dark Bronze Anodized (BK)",  excl:false},
+     {sku:"548E",   finish:"+ Epoxy Abrasive Tread (E)", excl:true},
+     {sku:"548V3",  finish:"+ Full Body Strength Fill (V3)",excl:true},
    ]},
 ];
 
@@ -713,7 +832,9 @@ function brandColor(b){
          "var(--txtsuccess)";
 }
 function brandBadge(b,bs){
-  const cls=b.includes("ASSA ABLOY")?"b-aa":b.includes("Allegion")||b.includes("Schlage")?"b-al":"b-dk";
+  const cls=b.includes("ASSA ABLOY")?"b-aa":
+            b.includes("Allegion")||b.includes("Schlage")?"b-al":
+            "b-dk";
   return`<span class="badge ${cls}">${bs}</span>`;
 }
 function catTag(c){
@@ -822,13 +943,13 @@ function doSearch(){
       const exclTag=p.exclusive?.length?`<span class="badge b-connect" style="font-size:10px">Exclusives</span>`:"";
       return`<div class="result-row" onclick="selectProduct('${p.id}')">
         <div style="flex:1;min-width:0">
-          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:3px">
+          <div class="rr-model">${p.model}</div>
+          <div class="rr-name">${p.name}</div>
+          <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-top:4px">
             ${catTag(p.cat)}
-            <span style="font-size:11px;font-weight:500;color:${brandColor(p.brand)}">${p.bs} · ${p.line}</span>
+            <span style="font-size:11px;color:${brandColor(p.brand)};font-weight:500">${p.bs}</span>
             ${propTag}${exclTag}
           </div>
-          <div class="rr-name">${p.name}</div>
-          <div class="rr-sku">${p.model}</div>
         </div>
         <div style="font-size:11px;color:var(--txt2);margin-left:auto;text-align:right;flex-shrink:0;padding-left:12px">${meta}</div>
         <div style="font-size:14px;color:var(--txt3);padding-left:8px">›</div>
